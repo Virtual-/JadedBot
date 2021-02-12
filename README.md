@@ -63,3 +63,5 @@ Sounds:
 !ramranch85, !ram85 - Plays Ram Ranch 85
 !nice - Click. Nice.
 !poopsock - Plays when mom find poop sock.
+!sorry - Our daddy told us to never be ashamed of our...
+!excellent - Excellent.
