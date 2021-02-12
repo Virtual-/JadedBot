@@ -27,6 +27,7 @@ Start up the program with `$ python3 jaded.py`. It's best to run this in the bac
 
 ### Usage
 
+```
 Command List:
 Help:
 !jaded - Prints this command list.
@@ -63,5 +64,8 @@ Sounds:
 !ramranch85, !ram85 - Plays Ram Ranch 85
 !nice - Click. Nice.
 !poopsock - Plays when mom find poop sock.
+<<<<<<< HEAD
 !sorry - Our daddy told us to never be ashamed of our...
 !excellent - Excellent.
+!augh - AUGH?!
+```

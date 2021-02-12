@@ -1,0 +1,3 @@
+configfile
+*.swp
+__pycache__
