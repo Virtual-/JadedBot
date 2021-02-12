@@ -44,13 +44,10 @@ class JadedBot(commands.Bot):
         self.command(aliases=['ram85'])(self.ramranch85)
         self.command()(self.nice)
         self.command()(self.poopsock)
-<<<<<<< HEAD
         self.command(aliases=['sorryforwhat'])(self.sorry)
         self.command()(self.excellent)
-=======
         self.command()(self.betterpoop)
         self.command()(self.augh)
->>>>>>> 368154d38be010754088e370a6336ee861a9ecde
         #self.command()(self.ytplay)
      
      
@@ -211,11 +208,8 @@ class JadedBot(commands.Bot):
             
             
     async def jaded(self, ctx):
-<<<<<<< HEAD
         await ctx.send('```Command List:\nHelp:\n!jaded - Prints this command list.\n\nWiki Searching:\n!everquest, !eq <search> - Searches P99 Wiki.\n!ck2 <search> - Searches CK2 Wiki.\n!ck3 <search> - Searches CK3 Wiki.\n!rs <search> - Searches OSRS Wiki.\n\nYoutube:\n!youtube, !yt <search> - Searches youtube and returns first video.\n!vaporwave - Returns random vaporwave track.\n\nMisc:\n!shitpost - Professionally shitposts in chat.\n!redpill - Drops some fresh redpills from Alex Jones.\n!audiophile - Inserts man listening to Edd Ed and Eddy Music.\n!greentext - Inserts a random greentext.\n\nAudio Controls:\n!join - Joins the bot to the voice channel you\'re currently in.\n!leave - Leaves the voice channel the bot is currently in.\n!stop - Stops current audio.\n!pause - Pauses current audio.\n!play - Resumes current audio.\n\nSounds:\n!nobodyhere, !nobody - There is nobody here.\n!ding - Plays EQ sound effect.\n!anime, !wow - Plays the woooow anime sound.\n!popping - Whats pawppping.\n!ramranch, !ram - Plays Ram Ranch.\n!ramranch85, !ram85 - Plays Ram Ranch 85\n!nice - Click. Nice.\n!poopsock - Plays when mom find poop sock.\n!sorry - Our daddy told us to never be ashamed of our...```')
-=======
         await ctx.send('```Command List:\nHelp:\n!jaded - Prints this command list.\n\nWiki Searching:\n!everquest, !eq <search> - Searches P99 Wiki.\n!ck2 <search> - Searches CK2 Wiki.\n!ck3 <search> - Searches CK3 Wiki.\n!rs <search> - Searches OSRS Wiki.\n\nYoutube:\n!youtube, !yt <search> - Searches youtube and returns first video.\n!vaporwave - Returns random vaporwave track.\n\nMisc:\n!shitpost - Professionally shitposts in chat.\n!redpill - Drops some fresh redpills from Alex Jones.\n!audiophile - Inserts man listening to Edd Ed and Eddy Music.\n!greentext - Inserts a random greentext.\n\nAudio Controls:\n!join - Joins the bot to the voice channel you\'re currently in.\n!leave - Leaves the voice channel the bot is currently in.\n!stop - Stops current audio.\n!pause - Pauses current audio.\n!play - Resumes current audio.\n\nSounds:\n!nobodyhere, !nobody - There is nobody here.\n!ding - Plays EQ sound effect.\n!anime, !wow - Plays the woooow anime sound.\n!popping - Whats pawppping.\n!ramranch, !ram - Plays Ram Ranch.\n!ramranch85, !ram85 - Plays Ram Ranch 85\n!nice - Click. Nice.\n!poopsock - Plays when mom find poop sock.\n!betterpoop - Mom find poopsock better version.\n!augh - AUGH?!.```')
->>>>>>> 368154d38be010754088e370a6336ee861a9ecde
         
         
     async def stop(self, ctx):
