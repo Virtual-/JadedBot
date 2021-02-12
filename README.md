@@ -41,6 +41,7 @@ Wiki Searching:
 Youtube:
 !youtube, !yt <search> - Searches youtube and returns first video.
 !vaporwave - Returns random vaporwave track.
+!ytplay, !playyt <URL> - Plays the audio of the video.
 
 Misc:
 !shitpost - Professionally shitposts in chat.
