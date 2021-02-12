@@ -5,6 +5,8 @@ import json
 import praw
 import configparser
 import youtube_dl
+import random
+import string
 from jones import quotes
 from random import randint
 from youtubesearchpython import SearchVideos
@@ -48,7 +50,7 @@ class JadedBot(commands.Bot):
         self.command()(self.excellent)
         self.command()(self.betterpoop)
         self.command()(self.augh)
-        #self.command()(self.ytplay)
+        self.command(aliases=['playyt'])(self.ytplay)
      
      
     def wiki_search(self, search, wiki):
@@ -224,21 +226,25 @@ class JadedBot(commands.Bot):
         ctx.voice_client.resume()
         
     
-    #async def ytplay(self, ctx, *, search): # Broken atm because of DMCA on youtube-dl
-    #    search = SearchVideos(search, offset = 1, mode = "json", max_results = 1)
-    #    result = search.result()
-    #    result = json.loads(result)
-    #    #ydl_opts = {'outtmpl': '/tmp/track.mpa'}
-    #    with youtube_dl.YoutubeDL({'format':'140', 'outtmpl': '/tmp/track.mpa'}) as ydl:
-    #        print(result['search_result'][0]['link'])
-    #        ydl.download([result['search_result'][0]['link']])
-    #        
-    #    try:
-    #        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/track.mpa'))
-    #        ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-    #        ctx.voice_client.source.volume = 30
-    #    except AttributeError:
-    #        await ctx.send("Join me to a channel with !join first.")
+    async def ytplay(self, ctx, *, search): 
+        search = SearchVideos(search, offset = 1, mode = "json", max_results = 1)
+        result = search.result()
+        result = json.loads(result)
+        letters = string.ascii_lowercase
+        filename = ''.join(random.choice(letters) for i in range(10))
+        #ydl_opts = {'outtmpl': '/tmp/track.mpa'}
+        with youtube_dl.YoutubeDL({'format':'140', 'outtmpl': '/tmp/{0}.mpa'.format(filename)}) as ydl:
+            print(result['search_result'][0]['link'])
+            ydl.download([result['search_result'][0]['link']])
+            
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/{0}.mpa'.format(filename)))
+            ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.source.volume = 30
+        except AttributeError:
+            await ctx.send("Join me to a channel with !join first.")
+        except discord.errors.ClientException:
+            await ctx.send("Audio already playing. !stop to stop.")
         
 
     async def popping(self, ctx):
