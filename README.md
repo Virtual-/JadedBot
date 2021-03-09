@@ -24,6 +24,12 @@ These entries in the file need to be filled, the top `TOKEN` is your discord API
 
 Start up the program with `$ python3 jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
 
+### Dependencies
+
+If you want to play music files over discord you will need an FFMPEG install in your $PATH. You will also need youtube-dl.
+
+This will save music files in /tmp/ so I recommend a cron script to remove those if you're on UNIX.
+
 
 ### Usage
 
