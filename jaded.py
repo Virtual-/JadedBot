@@ -51,6 +51,11 @@ class JadedBot(commands.Bot):
         self.command()(self.betterpoop)
         self.command()(self.augh)
         self.command(aliases=['playyt'])(self.ytplay)
+        self.command()(self.trap1)
+        self.command()(self.trap2)
+        self.command()(self.trap3)
+        self.command()(self.trap4)
+        self.command()(self.maybach)
      
      
     def wiki_search(self, search, wiki):
@@ -167,7 +172,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/nobody.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
     
@@ -176,7 +181,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/anime.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -184,7 +189,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/poopsock.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -192,7 +197,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/poopsockbetter.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -204,13 +209,13 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/ding.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
             
     async def jaded(self, ctx):
-        await ctx.send('```Command List:\nHelp:\n!jaded - Prints this command list.\n\nWiki Searching:\n!everquest, !eq <search> - Searches P99 Wiki.\n!ck2 <search> - Searches CK2 Wiki.\n!ck3 <search> - Searches CK3 Wiki.\n!rs <search> - Searches OSRS Wiki.\n\nYoutube:\n!youtube, !yt <search> - Searches youtube and returns first video.\n!vaporwave - Returns random vaporwave track.\n!ytplay, !playyt <URL> - Plays audio of youtube URL.\n\nMisc:\n!shitpost - Professionally shitposts in chat.\n!redpill - Drops some fresh redpills from Alex Jones.\n!audiophile - Inserts man listening to Edd Ed and Eddy Music.\n!greentext - Inserts a random greentext.\n\nAudio Controls:\n!join - Joins the bot to the voice channel you\'re currently in.\n!leave - Leaves the voice channel the bot is currently in.\n!stop - Stops current audio.\n!pause - Pauses current audio.\n!play - Resumes current audio.\n\nSounds:\n!nobodyhere, !nobody - There is nobody here.\n!ding - Plays EQ sound effect.\n!anime, !wow - Plays the woooow anime sound.\n!popping - Whats pawppping.\n!ramranch, !ram - Plays Ram Ranch.\n!ramranch85, !ram85 - Plays Ram Ranch 85\n!nice - Click. Nice.\n!poopsock - Plays when mom find poop sock.\n!sorry - Our daddy told us to never be ashamed of our...```')
+        await ctx.send('```Command List:\nHelp:\n!jaded - Prints this command list.\n\nWiki Searching:\n!everquest, !eq <search> - Searches P99 Wiki.\n!ck2 <search> - Searches CK2 Wiki.\n!ck3 <search> - Searches CK3 Wiki.\n!rs <search> - Searches OSRS Wiki.\n\nYoutube:\n!youtube, !yt <search> - Searches youtube and returns first video.\n!vaporwave - Returns random vaporwave track.\n!ytplay, !playyt <URL> - Plays audio of youtube URL.\n\nMisc:\n!shitpost - Professionally shitposts in chat.\n!redpill - Drops some fresh redpills from Alex Jones.\n!audiophile - Inserts man listening to Edd Ed and Eddy Music.\n!greentext - Inserts a random greentext.\n\nAudio Controls:\n!join - Joins the bot to the voice channel you\'re currently in.\n!leave - Leaves the voice channel the bot is currently in.\n!stop - Stops current audio.\n!pause - Pauses current audio.\n!play - Resumes current audio.\n\nSounds:\n!nobodyhere, !nobody - There is nobody here.\n!ding - Plays EQ sound effect.\n!anime, !wow - Plays the woooow anime sound.\n!popping - Whats pawppping.\n!ramranch, !ram - Plays Ram Ranch.\n!ramranch85, !ram85 - Plays Ram Ranch 85\n!nice - Click. Nice.\n!poopsock - Plays when mom find poop sock.\n!sorry - Our daddy told us to never be ashamed of our...\n!trap1-4 - Various trapaholics sounds\n!maybach - Maybach music sound.```')
         
         
     async def stop(self, ctx):
@@ -243,7 +248,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/{0}.mpa'.format(filename)))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
         except discord.errors.ClientException:
@@ -254,7 +259,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/popping.mp3'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -263,7 +268,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/ram.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -272,7 +277,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/ram85.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
 
@@ -281,7 +286,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/nice.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -290,7 +295,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/sorryforwhat.mp3'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
@@ -298,7 +303,7 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/excellent.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
 
@@ -306,10 +311,50 @@ class JadedBot(commands.Bot):
         try:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/timallen.webm'))
             ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-            ctx.voice_client.source.volume = 30
+            ctx.voice_client.source.volume = 1.0
+        except AttributeError:
+            await ctx.send("Join me to a channel with !join first.")
+
+    async def trap1(self, ctx):
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/trap1.wav'))
+            ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.source.volume = 1.0
         except AttributeError:
             await ctx.send("Join me to a channel with !join first.")
             
+    async def trap2(self, ctx):
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/trap2.wav'))
+            ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.source.volume = 1.0
+        except AttributeError:
+            await ctx.send("Join me to a channel with !join first.")
+
+    async def trap3(self, ctx):
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/trap3.wav'))
+            ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.source.volume = 1.0
+        except AttributeError:
+            await ctx.send("Join me to a channel with !join first.")
+
+    async def trap4(self, ctx):
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/trap4.wav'))
+            ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.source.volume = 1.0
+        except AttributeError:
+            await ctx.send("Join me to a channel with !join first.")
+
+    async def maybach(self, ctx):
+        try:
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/maybach.wav'))
+            ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.source.volume = 1.0
+        except AttributeError:
+            await ctx.send("Join me to a channel with !join first.")
+
 bot = commands.Bot(command_prefix='!', description="Jaded Bot")
 jaded = JadedBot(bot)
 

@@ -65,8 +65,9 @@ Sounds:
 !ramranch85, !ram85 - Plays Ram Ranch 85
 !nice - Click. Nice.
 !poopsock - Plays when mom find poop sock.
-<<<<<<< HEAD
 !sorry - Our daddy told us to never be ashamed of our...
 !excellent - Excellent.
 !augh - AUGH?!
+!trap(1,4) - Various trapaholics sounds.
+!maybach - Maybach music sound
 ```
