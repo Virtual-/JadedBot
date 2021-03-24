@@ -1,11 +1,14 @@
 import discord
 import os
 import git
+import configparser
 from discord.ext import commands
 
 JADEDVER = 1.5
 COMMITID = git.Repo().head.object.hexsha[:7]
 
+config = configparser.ConfigParser()
+config.read('configfile')
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),description="Jaded Bot")
 
 @bot.command()
@@ -36,4 +39,4 @@ for filename in os.listdir('./cogs'):
 
 
 print("JadedBot - https://github.com/Virtual-/JadedBot\nVersion - {1}\nLatest commit - https://github.com/Virtual-/JadedBot/commit/{0}".format(COMMITID, JADEDVER))
-bot.run('ODI0MDE5MzAzMjc1NjkyMDQ0.YFpRxw.ovr_nYChQfNNZwbYsChsYLVj1Tk')
+bot.run(config['JadedBot']['TOKEN'])
