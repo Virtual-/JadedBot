@@ -75,7 +75,7 @@ class Music(commands.Cog):
 
     #    await ctx.send('Now playing: {}'.format(player.title))
 
-    @commands.command(alises=['ytplay']) # Temp disabled ytplay as it needs work because it's saving files in JadedBot directory.
+    @commands.command(aliases=['ytplay']) # Temp disabled ytplay as it needs work because it's saving files in JadedBot directory.
     async def stream(self, ctx, *, url):
         """!stream <search/URL> - Directly streams the requested URL or search term. (Can be buggy)"""
 
