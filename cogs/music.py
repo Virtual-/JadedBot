@@ -9,7 +9,7 @@ youtube_dl.utils.bug_reports_message = lambda: ''
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'outtmpl': '/tmp/%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
     'noplaylist': True,
     'nocheckcertificate': True,
@@ -65,17 +65,17 @@ class Music(commands.Cog):
             await ctx.send("You're not in a channel.")
 
 
-    #@commands.command()
-    #async def ytplay(self, ctx, *, url):
-    #    """!ytplay <search/URL> - Downloads and plays the requested URL or search term."""
+    @commands.command()
+    async def ytplay(self, ctx, *, url):
+        """!ytplay <search/URL> - Downloads and plays the requested URL or search term."""
 
-    #    async with ctx.typing():
-    #        player = await YTDLSource.from_url(url, loop=self.bot.loop)
-    #        ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=self.bot.loop)
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
-    #    await ctx.send('Now playing: {}'.format(player.title))
+        await ctx.send('Now playing: {}'.format(player.title))
 
-    @commands.command(aliases=['ytplay']) # Temp disabled ytplay as it needs work because it's saving files in JadedBot directory.
+    @commands.command()
     async def stream(self, ctx, *, url):
         """!stream <search/URL> - Directly streams the requested URL or search term. (Can be buggy)"""
 
@@ -102,7 +102,7 @@ class Music(commands.Cog):
         ctx.voice_client.stop()
 
     #@play.before_invoke
-    #@ytplay.before_invoke
+    @ytplay.before_invoke
     @stream.before_invoke
     async def ensure_voice(self, ctx):
         if ctx.voice_client is None:
