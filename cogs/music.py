@@ -89,8 +89,10 @@ class Music(commands.Cog):
     async def volume(self, ctx, volume: int):
         """!volume <number> - Changes the volume of the audio."""
 
-        #if ctx.voice_client is None:
-        #    return await ctx.send("Not connected to a voice channel.")
+        if ctx.voice_client is None:
+            return await ctx.send("Not connected to a voice channel.")
+        if volume > 100:
+            return await ctx.send("Volume can't go higher than 100.")
 
         ctx.voice_client.source.volume = volume / 100
         await ctx.send("Changed volume to {}%".format(volume))
