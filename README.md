@@ -20,6 +20,10 @@ $ touch configfile
 
 Notice at the end we created a configfile. This is the file that will hold the settings we need in order for the bot to work properly so edit the file and input the following:
 
+At this point we should also update the pip packages just to be sure we are on the latest.
+
+`pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U`
+
 ```
 [JadedBot]
 TOKEN = DISCORDTOKENHERE
