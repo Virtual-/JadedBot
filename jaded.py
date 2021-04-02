@@ -3,7 +3,7 @@ import os
 import configparser
 from discord.ext import commands
 
-JADEDVER = 1.5
+JADEDVER = 2.0
 COMMITID = ""
 
 if os.name != 'nt':
@@ -39,10 +39,27 @@ async def unload(ctx, extension):
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
-        bot.load_extension(f'cogs.{filename[:-3]}')
+        try:
+            bot.load_extension(f'cogs.{filename[:-3]}')
+        except:
+            print("Had an issue loading {0} module. Skipping".format(filename))
 
+if os.path.isfile('configfile'):
+    pass
+else:
+    print("\nCan't see 'configfile' generating blank configfile...")
+    f = open("configfile", "w")
+    f.write("[JadedBot]\nTOKEN =\nREDDIT_ID =\nREDDIT_SECRET =\n")
+
+print("\n")
 if os.name != 'nt':
     print("JadedBot - https://github.com/Virtual-/JadedBot\nVersion - {1}\nLatest commit - https://github.com/Virtual-/JadedBot/commit/{0}".format(COMMITID, JADEDVER))
 else:
     print("JadedBot - https://github.com/Virtual-/JadedBot\nVersion - {0}\nRunning on Windows.".format(JADEDVER))
+
+try:
+    config['JadedBot']['TOKEN']
+except KeyError:
+    print("\nYou seem to be missing the discord key for the bot, please add this to configfile\n\n")
+
 bot.run(config['JadedBot']['TOKEN'])
