@@ -1,11 +1,14 @@
 import discord
 import os
-import git
 import configparser
 from discord.ext import commands
 
+if os.name != 'nt':
+    import git
+    COMMITID = git.Repo().head.object.hexsha[:7]
+
 JADEDVER = 1.5
-COMMITID = git.Repo().head.object.hexsha[:7]
+COMMITID = ""
 
 config = configparser.ConfigParser()
 config.read('configfile')
@@ -16,7 +19,8 @@ async def version(ctx):
     """!version - Displays information about this verison of JadedBot"""
     await ctx.send("JadedBot - https://github.com/Virtual-/JadedBot")
     await ctx.send("Version - {0}".format(JADEDVER))
-    await ctx.send("Latest commit - https://github.com/Virtual-/JadedBot/commit/{0}".format(COMMITID))
+    if os.name != 'nt':
+        await ctx.send("Latest commit - https://github.com/Virtual-/JadedBot/commit/{0}".format(COMMITID))
 
 
 @bot.command()
@@ -37,6 +41,8 @@ for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
 
-
-print("JadedBot - https://github.com/Virtual-/JadedBot\nVersion - {1}\nLatest commit - https://github.com/Virtual-/JadedBot/commit/{0}".format(COMMITID, JADEDVER))
+if os.name != 'nt':
+    print("JadedBot - https://github.com/Virtual-/JadedBot\nVersion - {1}\nLatest commit - https://github.com/Virtual-/JadedBot/commit/{0}".format(COMMITID, JADEDVER))
+else:
+    print("JadedBot - https://github.com/Virtual-/JadedBot\nVersion - {0}\nRunning on Windows.".format(JADEDVER))
 bot.run(config['JadedBot']['TOKEN'])
