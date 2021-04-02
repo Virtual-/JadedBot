@@ -3,12 +3,12 @@ import os
 import configparser
 from discord.ext import commands
 
+JADEDVER = 1.5
+COMMITID = ""
+
 if os.name != 'nt':
     import git
     COMMITID = git.Repo().head.object.hexsha[:7]
-
-JADEDVER = 1.5
-COMMITID = ""
 
 config = configparser.ConfigParser()
 config.read('configfile')
