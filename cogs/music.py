@@ -1,6 +1,7 @@
 import asyncio
 import discord
 import youtube_dl
+import os
 from discord.ext import commands
 
 # Suppress noise about console usage from errors
@@ -21,9 +22,17 @@ ytdl_format_options = {
     'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
-ffmpeg_options = {
-    'options': '-vn'
-}
+ffmpeg_options = {}
+
+if os.name != 'nt': # This if statement is needed because Windows can't into environment variables properly. LOL.
+    ffmpeg_options = {
+        'options': '-vn',
+    }
+else: 
+        ffmpeg_options = {
+        'options': '-vn',
+        'executable': 'C:\\ffmpeg\\bin\\ffmpeg.exe' # Lame hardcoded PATH but env variables don't seem to work.
+    }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
