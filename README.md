@@ -33,13 +33,56 @@ The token entry, the top `TOKEN` is your discord API key. The following two are 
 
 Start up the program with `$ python3 jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
 
-### Dependencies
-
-If you want to play music files over discord you will need an FFMPEG install in your $PATH. You will also need youtube-dl.
-
 #### Windows 
 
-TODO
+##### Visual C++
+First we are going to need to install Visual C++ 14.0 or greater found here: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+Install this and when finished open up "Visual Studio Installer" and navigate to the "Available tab" and install "Visual Studio Build Tools 2019".
+
+After this is installed you will then need to click "Modify" on "Visual Studio Build Tools 2019"
+
+Under Desktop & Mobile select "C++ build tools" and on the right side under Installation details make sure the following are selected.
+
+- MSVC v142 -VS 2019 C++ x64/x86 build tools
+- Windows 10 SDK
+- C++ Cmake tools for Windows
+- Testing tools core features
+- C++ AddressSanitizer
+
+Once these are selected, press "modify" in the bottom right and wait for it to complete.
+
+##### Python
+Go to the python website at https://www.python.org/downloads/ and download the installer.
+
+Run the installer which is pretty straight forward but make sure to select the "ADD PYTHON TO PATH" option or you will have issues with pip later on.
+
+##### FFmpeg
+FFmpeg is required if you want the bot to play audio files and have access to voice features on discord.
+
+For JadedBot we need to download ffmpeg from here: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z
+
+Unzip this and rename the extracted folder to "ffmpeg" and place it in the root of C:
+
+The .exe file of ffmpeg should be at `"C:\ffmpeg\bin\ffmpeg.exe"`
+
+##### JadedBot source
+The easiest way is to download the latest source from: https://github.com/Virtual-/JadedBot/releases/
+
+Download the source code, extract it and open the JadedBot folder.
+
+Hold shift and right click in the folder and select "open powershell window here"
+
+First we will install the dependencies with the command: `pip install -r requirements.txt` 
+
+After this command is finished we will then re-update these dependencies as they could be out of date with this command: `pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}`
+
+Run the bot with `python jaded.py`, this will probably fail as we haven't set up the discord key in the `configfile` but this will generate the `configfile` in the directory.
+
+Open the `configfile` and set the TOKEN variable with your discord key.
+
+Run `python jaded.py` again and the bot should now be running.
+
 
 ### Usage
 
