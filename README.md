@@ -1,7 +1,15 @@
-### New JadedBot
-The time came for a rewrite of the bot as the code beforehand was messy and I wanted to be able to add modules into the bot as it's running. Thus we now have a new and improved JadedBot 1.5 now with modular plugins.
+### JadedBot 2.0
 
-More indepth README and installation guide coming in the next commits to this repo.
+This is the release of JadedBot 2.0.
+
+JadedBot Features:
+
+- Modular plugins
+- Audio functionality (various websites including YouTube and soundcloud)
+- Reddit functionality
+- Customized wiki searches.
+
+A TLDR of JadedBot is a small modular custom bot for discord that I originally wrote for a discord community. It's become more of a project for me now and a way for me to practice with Python and new programming concepts.
 
 
 ### Installation.
@@ -9,7 +17,30 @@ More indepth README and installation guide coming in the next commits to this re
 #### Unix/Linux/BSD
 The easiest time you'll have installing this bot is in a UNIX like environment such a Linux/BSD.
 
-You made need sudo access for pip3 access aswell as ffmpeg installed on your system if you want to play music over voice channels.
+You may need sudo access for pip3 access aswell as ffmpeg installed on your system if you want to play music over voice channels.
+
+##### FFmpeg
+
+Let's start with installing ffmpeg. I'm using Fedora so for me it's as simple as:
+
+`$ sudo dnf install ffmpeg -y`
+
+After this command has run type `ffmpeg` into the terminal and if you see something along the lines of:
+
+```
+ffmpeg version 4.3.2 Copyright (c) 2000-2021 the FFmpeg developers
+  built with gcc 10 (GCC)
+```
+ffmpeg has been correctly installed.
+
+##### PIP
+
+There is plenty of documentation for installing pip on Linux/BSD systems but the simpliest command is:
+
+`curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py`
+
+##### JadedBot source
+If you also need git on your system install it via your package manager.
 
 ```
 $ git clone https://github.com/Virtual-/JadedBot
@@ -31,9 +62,13 @@ REDDIT_ID = REDDITTOKENHERE
 REDDIT_SECRET = REDDITSECRETHERE
 ```
 
-If reddit functionality is not required, rename `reddit.py` in the cogs directory to `reddit.py.backup`. Checks will be put in place in the later version to run without any tokens added to the configfile.
+You can also run the bot and although it will fail, it will generate a configfile for you.
 
-The token entry, the top `TOKEN` is your discord API key. The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
+If reddit functionality is not required, you can leave the REDDIT_ID and REDDIT_SECRET empty and the bot will not load reddit functionality on boot.
+
+The token entry, the top `TOKEN` is your discord API key. 
+
+The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
 
 Start up the program with `$ python3 jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
 
@@ -84,6 +119,12 @@ After this command is finished we will then re-update these dependencies as they
 Run the bot with `python jaded.py`, this will probably fail as we haven't set up the discord key in the `configfile` but this will generate the `configfile` in the directory.
 
 Open the `configfile` and set the TOKEN variable with your discord key.
+
+If reddit functionality is not required, you can leave the REDDIT_ID and REDDIT_SECRET empty and the bot will not load reddit functionality on boot.
+
+The token entry, the top `TOKEN` is your discord API key. 
+
+The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
 
 Run `python jaded.py` again and the bot should now be running.
 
@@ -137,6 +178,12 @@ YouTube:
   vaporwave  !vaporwave - Searches youtube for vaporwave.
   youtube    !youtube <search> - Searches youtube with your search and returns the first link.
   
-​No Category:
+No Category:
   help       Shows this message
+  load       !load <module> - Loads a python module into the bot
+  unload     !unload <module> - Unloads a python module into the bot
+  version    !version - Displays information about this verison of JadedBot
+
+Type !help command for more info on a command.
+You can also type !help category for more info on a category.
 ```
