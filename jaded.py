@@ -3,7 +3,7 @@ import os
 import configparser
 from discord.ext import commands
 
-JADEDVER = 2.0
+JADEDVER = 2.1
 COMMITID = ""
 
 if os.name != 'nt':
@@ -41,8 +41,9 @@ for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         try:
             bot.load_extension(f'cogs.{filename[:-3]}')
-        except:
+        except Exception as e:
             print("Had an issue loading {0} module. Skipping".format(filename))
+            print(e)
 
 if os.path.isfile('configfile'):
     pass

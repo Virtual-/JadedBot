@@ -2,6 +2,7 @@ import asyncio
 import discord
 import youtube_dl
 import os
+from gtts import gTTS
 from discord.ext import commands
 
 # Suppress noise about console usage from errors
@@ -22,17 +23,9 @@ ytdl_format_options = {
     'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
-ffmpeg_options = {}
-
-if os.name != 'nt': # This if statement is needed because Windows can't into environment variables properly. LOL.
-    ffmpeg_options = {
-        'options': '-vn',
-    }
-else: 
-        ffmpeg_options = {
-        'options': '-vn',
-        'executable': 'C:\\ffmpeg\\bin\\ffmpeg.exe' # Lame hardcoded PATH but env variables don't seem to work.
-    }
+ffmpeg_options = {
+    'options': '-vn'
+}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
@@ -84,6 +77,7 @@ class Music(commands.Cog):
 
         await ctx.send('Now playing: {}'.format(player.title))
 
+
     @commands.command()
     async def stream(self, ctx, *, url):
         """!stream <search/URL> - Directly streams the requested URL or search term. (Can be buggy)"""
@@ -93,6 +87,27 @@ class Music(commands.Cog):
             ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
         await ctx.send('Now playing: {}'.format(player.title))
+
+
+    @commands.command()
+    async def tts(self, ctx, *arguments):
+        """!tts <text> - Text to speech."""
+
+        full_string = ""
+
+        for element in arguments:
+            full_string = full_string + " " + element
+
+        myobj = gTTS(text=full_string)
+        if os.name != 'nt':
+            myobj.save('/tmp/tts.mp3')
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/tts.mp3'))
+        else:
+            myobj.save('./tmp/tts.mp3')
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/tts.mp3'))
+
+        ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+
 
     @commands.command()
     async def volume(self, ctx, volume: int):

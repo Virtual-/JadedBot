@@ -1,11 +1,11 @@
-### JadedBot 2.0
+### JadedBot 2.1
 
-This is the release of JadedBot 2.0.
+This is the release of JadedBot 2.1.
 
 JadedBot Features:
 
 - Modular plugins
-- Audio functionality (various websites including YouTube and soundcloud)
+- Audio functionality (various websites including YouTube, soundcloud and now text to speech)
 - Reddit functionality
 - Customized wiki searches.
 
@@ -139,6 +139,7 @@ Music:
   leave      !leave - Leaves the channel.
   stop       !stop - Stops and disconnects the bot from voice.
   stream     !stream <search/URL> - Directly streams the requested URL or search terms given.
+  tts        !tts <text> - Text to speech.
   volume     !volume <number> - Changes the volume of the audio.
   ytplay     !ytplay <search/URL> - Downloads the file first beforehand, temporarily disabled for now.
   
