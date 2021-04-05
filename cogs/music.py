@@ -31,6 +31,7 @@ ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
+    """This class is a setup to stream audio into discord."""
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)
 
@@ -38,6 +39,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         self.title = data.get('title')
         self.url = data.get('url')
+
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
@@ -53,8 +55,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 class Music(commands.Cog):
+    """This class is responsible for joining, leaving and various audio channel functionality."""
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.command()
     async def join(self, ctx, channel: discord.VoiceChannel="Default Voice Channel"): # This seems to failover and make the bot join your current channel
@@ -120,6 +124,7 @@ class Music(commands.Cog):
 
         ctx.voice_client.source.volume = volume / 100
         await ctx.send("Changed volume to {}%".format(volume))
+
 
     @commands.command()
     async def stop(self, ctx):

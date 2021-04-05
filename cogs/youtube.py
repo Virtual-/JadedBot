@@ -6,8 +6,7 @@ from discord.ext import commands
 
 
 class YouTube(commands.Cog):
-
-
+    """This class is responsible for some youtube functionality, mainly searching."""
     def __init__(self, bot):
         self.bot = bot
 

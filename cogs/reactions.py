@@ -4,7 +4,6 @@ from discord.ext import commands
 
 class Reactions(commands.Cog):
     """This class is responsible for reactions pics and gifs"""
-
     def __init__(self, bot):
         self.bot = bot
 

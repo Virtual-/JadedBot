@@ -6,13 +6,13 @@ from discord.ext import commands
 
 class Reddit(commands.Cog):
     """This class is responsible for all the reddit functionality."""
-
     def __init__(self, bot):
         self.bot = bot
         self.config = configparser.ConfigParser()
         self.config.read('configfile')
         self.REDDIT_ID = self.config['JadedBot']['REDDIT_ID']
         self.REDDIT_SECRET = self.config['JadedBot']['REDDIT_SECRET']
+
 
     @commands.command()
     async def shitpost(self, ctx):

@@ -3,13 +3,14 @@ from discord.ext import commands
 
 class Sounds(commands.Cog):
     """This class is responsible for playing locally saved soundbites from the assets folder."""
-
     def __init__(self, bot):
         self.bot = bot
+
 
     async def play(self, ctx, query):
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
         ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+
 
     @commands.command(aliases=['nobody'])
     async def nobodyhere(self, ctx):
