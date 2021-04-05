@@ -4,12 +4,19 @@ This is the release of JadedBot 2.1.
 
 JadedBot Features:
 
-- Modular plugins
-- Audio functionality (various websites including YouTube, soundcloud and now text to speech)
-- Reddit functionality
+- Modular plugins (Able to reload plugins while the bot is in use.)
+- Audio functionality (various websites including YouTube, soundcloud and now text to speech).
+- Reddit functionality.
 - Customized wiki searches.
+- Extendable.
 
 A TLDR of JadedBot is a small modular custom bot for discord that I originally wrote for a discord community. It's become more of a project for me now and a way for me to practice with Python and new programming concepts.
+
+#### Where is 1.0?
+
+JadedBot had a rewrite as once upon a time this bot was just one Python file with the assets folder.
+
+If you go far back enough in the commits you can see these changes but there was no 'official' release of 1.0 as I didn't think it was good enough at that point.
 
 
 ### Installation.
