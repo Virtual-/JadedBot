@@ -15,5 +15,17 @@ class Reactions(commands.Cog):
         await ctx.send(file=discord.File('assets/audiophile.jpg'))
 
 
+    @commands.command()
+    async def soy(self, ctx):
+        """!soy - Places a soyboy image into chat."""
+        await ctx.send(file=discord.File('assets/soy.png'))
+
+
+    @commands.command()
+    async def gal(self, ctx):
+        """!gal - Places galosengen into chat."""
+        await ctx.send(file=discord.File('assets/gal.gif'))
+
+
 def setup(bot):
     bot.add_cog(Reactions(bot))

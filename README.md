@@ -53,7 +53,9 @@ Notice at the end we created a configfile. This is the file that will hold the s
 
 At this point we should also update the pip packages just to be sure we are on the latest.
 
-`pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U`
+`pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install -U`
+
+Try substitute `pip` for `pip3` if you use a system thats old enough to still use Python2 if you have issues installing.
 
 ```
 [JadedBot]
@@ -145,6 +147,8 @@ Music:
   
 Reactions:
   audiophile !audiophile - Places audiophile image into chat.
+  gal        !gal - Places galosengen into chat.
+  soy        !soy - Places a soyboy image into chat.
   
 Reddit:
   greentext  !greentext - Grabs a random post from /r/greentext
