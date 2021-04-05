@@ -104,7 +104,7 @@ class Music(commands.Cog):
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/tts.mp3'))
         else:
             myobj.save('./tmp/tts.mp3')
-            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/tmp/tts.mp3'))
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('./tmp/tts.mp3'))
 
         ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
 
