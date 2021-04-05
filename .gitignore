@@ -1,3 +1,4 @@
 configfile
 *.swp
 __pycache__
+.tmp
