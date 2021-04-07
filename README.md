@@ -179,6 +179,7 @@ Sounds:
   trap2      !trap2 - Plays the second trapaholics sound effect.
   trap3      !trap3 - Plays the first trapaholics sound effect.
   trap4      !trap4 - Plays the first trapaholics sound effect.
+  rack       !rack  - Plays beautiful rack sound effect.
   
 WikiSearch:
   ck2        !ck2 <search> - Searches the CK2 wiki.
