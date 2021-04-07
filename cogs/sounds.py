@@ -113,5 +113,11 @@ class Sounds(commands.Cog):
         await self.play(ctx, "assets/maybach.wav")
 
 
+    @commands.command()
+    async def rack(self, ctx):
+        """!rack - Plays beautiful rack."""
+        await self.play(ctx, "assets/rack.webm")
+
+
 def setup(bot):
     bot.add_cog(Sounds(bot))
