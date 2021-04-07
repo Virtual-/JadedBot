@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 
 class WikiSearch(commands.Cog):
     """This class/cog is responsible for searching various different game wiki's"""
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -31,6 +30,7 @@ class WikiSearch(commands.Cog):
             return end_url + end_string
         except AttributeError:
             return "Failed to find that page, Sorry."
+
 
     @commands.command(aliases=['eq'])
     async def everquest(self, ctx, *, search):
@@ -58,6 +58,7 @@ class WikiSearch(commands.Cog):
         """!ck3 <search> - Searches the CK3 wiki."""
         ck_string = self.wiki_search(search, 'ck3')
         await ctx.send('' + ck_string)
+
 
 def setup(bot):
     bot.add_cog(WikiSearch(bot))

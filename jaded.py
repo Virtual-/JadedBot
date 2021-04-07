@@ -14,6 +14,7 @@ config = configparser.ConfigParser()
 config.read('configfile')
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),description="Jaded Bot")
 
+
 @bot.command()
 async def version(ctx):
     """!version - Displays information about this verison of JadedBot"""
@@ -37,6 +38,7 @@ async def unload(ctx, extension):
     bot.unload_extension(f'cogs.{extension}')
 
 
+
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         try:
@@ -45,12 +47,14 @@ for filename in os.listdir('./cogs'):
             print("Had an issue loading {0} module. Skipping".format(filename))
             print(e)
 
+
 if os.path.isfile('configfile'):
     pass
 else:
     print("\nCan't see 'configfile' generating blank configfile...")
     f = open("configfile", "w")
     f.write("[JadedBot]\nTOKEN =\nREDDIT_ID =\nREDDIT_SECRET =\n")
+
 
 print("\n")
 if os.name != 'nt':
@@ -62,5 +66,6 @@ try:
     config['JadedBot']['TOKEN']
 except KeyError:
     print("\nYou seem to be missing the discord key for the bot, please add this to configfile\n\n")
+
 
 bot.run(config['JadedBot']['TOKEN'])
