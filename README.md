@@ -186,6 +186,9 @@ WikiSearch:
   ck3        !ck3 <search> - Searches the CK3 wiki.
   everquest  !everquest, !eq <search> - Searches the Project1999 wiki.
   runescape  !runescape, !rs <search> - Searched the OSRS wiki.
+
+WoW:
+  wow        !wow <search> - Searches wowdb and returns the result.
   
 YouTube:
   vaporwave  !vaporwave - Searches youtube for vaporwave.

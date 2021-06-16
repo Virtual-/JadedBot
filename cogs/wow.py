@@ -11,15 +11,17 @@ class WoW(commands.Cog):
 
     @commands.command()
     async def wow(self, ctx, *, search):
+        """!wow <search> - Searches wowdb and returns the result."""
         url = 'https://www.wowdb.com/search?search='
         query = search.replace(' ', '+')
 
         try:
-            page = requests.get(url + query)
+            page = requests.get(url + query).text
             soup = BeautifulSoup(page, 'html.parser')
             result = soup.find(class_="even")
             end_url = str(result.select_one("a")['href'])
 
+            await ctx.send('Pulling from wowdb.com.')
             await ctx.send(end_url)
         except:
             await ctx.send('Failed to find that page, sorry.')
