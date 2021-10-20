@@ -20,11 +20,13 @@ class WoW(commands.Cog):
             soup = BeautifulSoup(page, 'html.parser')
             result = soup.find(class_="even")
             end_url = str(result.select_one("a")['href'])
+            #wowhead = soup.find('a', {'rel':'nofollow'})
 
-            await ctx.send('Pulling from wowdb.com.')
+            await ctx.send('WoWDB Link:')
             await ctx.send(end_url)
         except:
             await ctx.send('Failed to find that page, sorry.')
+            print(wowhead['href'])
 
 
 

@@ -25,6 +25,10 @@ class Reactions(commands.Cog):
         """!gal - Places galosengen into chat."""
         await ctx.send(file=discord.File('assets/gal.gif'))
 
+    @commands.command()
+    async def smiley(self, ctx):
+        """!smiley - Places galosengen into chat."""
+        await ctx.send(file=discord.File('assets/smiley.gif'))
 
 def setup(bot):
     bot.add_cog(Reactions(bot))
