@@ -3,7 +3,7 @@ import os
 import configparser
 from discord.ext import commands
 
-JADEDVER = 2.1
+JADEDVER = 2.2
 COMMITID = ""
 
 if os.name != 'nt':

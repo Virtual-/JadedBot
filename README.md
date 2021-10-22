@@ -1,6 +1,6 @@
-### JadedBot 2.1
+### JadedBot 2.2
 
-This is the release of JadedBot 2.1.
+This is the release of JadedBot 2.2.
 
 JadedBot Features:
 
