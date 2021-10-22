@@ -13,7 +13,7 @@ ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '/tmp/%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
-    'noplaylist': True,
+    'noplaylist': False,
     'nocheckcertificate': True,
     'ignoreerrors': False,
     'logtostderr': False,
@@ -70,19 +70,21 @@ class Music(commands.Cog):
         except AttributeError:
             await ctx.send("You're not in a channel.")
 
+# Commented this out for now as stream seems to work better all of a sudden and this lags
+# maybe something gooogle has done or the library creator?
 
-    @commands.command()
-    async def ytplay(self, ctx, *, url):
-        """!ytplay <search/URL> - Downloads and plays the requested URL or search term."""
+#    @commands.command()
+#    async def ytplay(self, ctx, *, url):
+#        """!ytplay <search/URL> - Downloads and plays the requested URL or search term."""
+#
+#        async with ctx.typing():
+#            player = await YTDLSource.from_url(url, loop=self.bot.loop)
+#            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+#
+#        await ctx.send('Now playing: {}'.format(player.title))
 
-        async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.bot.loop)
-            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
-        await ctx.send('Now playing: {}'.format(player.title))
-
-
-    @commands.command()
+    @commands.command(aliases=['ytplay']) # Alias to keep things simple
     async def stream(self, ctx, *, url):
         """!stream <search/URL> - Directly streams the requested URL or search term. (Can be buggy)"""
 
@@ -133,7 +135,7 @@ class Music(commands.Cog):
         ctx.voice_client.stop()
 
     #@play.before_invoke
-    @ytplay.before_invoke
+    #@ytplay.before_invoke
     @stream.before_invoke
     async def ensure_voice(self, ctx):
         if ctx.voice_client is None:
