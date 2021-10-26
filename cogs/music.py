@@ -15,7 +15,7 @@ ytdl_format_options = {
     'restrictfilenames': True,
     'noplaylist': False,
     'nocheckcertificate': True,
-    'ignoreerrors': False,
+    'ignoreerrors': True,
     'logtostderr': False,
     'quiet': True,
     'no_warnings': True,
@@ -24,6 +24,7 @@ ytdl_format_options = {
 }
 
 ffmpeg_options = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', # Needed to stop corrupted packets bringing music to a halt
     'options': '-vn'
 }
 
