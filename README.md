@@ -156,7 +156,8 @@ Reactions:
   audiophile !audiophile - Places audiophile image into chat.
   gal        !gal - Places galosengen into chat.
   soy        !soy - Places a soyboy image into chat.
-  simley     !smiley - Places dancing smiley into chat.
+  smiley     !smiley - Places dancing smiley into chat.
+  juul	     !juul - Places juul vocoded into chat.
   
 Reddit:
   greentext  !greentext - Grabs a random post from /r/greentext
