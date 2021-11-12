@@ -1,5 +1,6 @@
 import discord
 import requests
+import json
 from discord.ext import commands
 from bs4 import BeautifulSoup
 
@@ -44,6 +45,20 @@ class WikiSearch(commands.Cog):
         """!runescape, !rs <search> - Searched the OSRS wiki."""
         rs_string = self.wiki_search(search, 'rs')
         await ctx.send('' + rs_string)
+    
+
+    @commands.command(aliases=['ha'])
+    async def highalch(self, ctx, *, searcheditem):
+        data = requests.get("https://prices.runescape.wiki/api/v1/osrs/mapping").text
+        items = json.loads(data)
+        for item in items:
+            if searcheditem.capitalize() in item['name']:
+                data = requests.get("https://oldschool.runescape.wiki/w/File:{0}".format(item['icon'].replace(' ', '_'))).text
+                soup = BeautifulSoup(data, 'html.parser')
+                myclass = soup.find("div", {"class": "fullImageLink"})
+                end_url = myclass.find('a')['href']
+                await ctx.send('' + 'https://oldschool.runescape.wiki' + end_url)
+                await ctx.send("``` **{0}**\nHigh Alchemy price: {1}\n{2}```".format(str(item['name']), str(item['highalch']), str(item['examine'])))
 
 
     @commands.command()
