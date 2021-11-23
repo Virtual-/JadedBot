@@ -188,6 +188,7 @@ WikiSearch:
   ck3        !ck3 <search> - Searches the CK3 wiki.
   everquest  !everquest, !eq <search> - Searches the Project1999 wiki.
   runescape  !runescape, !rs <search> - Searched the OSRS wiki.
+  !highalch, !ha <search> - Searches the OSRS wiki for an item and returns high alchemy price.
 
 WoW:
   wow        !wow <search> - Searches wowdb and returns the result.
