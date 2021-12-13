@@ -48,7 +48,6 @@ class WikiSearch(commands.Cog):
     
 
     @commands.command(aliases=['ha'])
-    """!highalch, !ha <search> - Searches the OSRS wiki for an item and returns high alchemy price."""
     async def highalch(self, ctx, *, searcheditem):
         data = requests.get("https://prices.runescape.wiki/api/v1/osrs/mapping").text
         items = json.loads(data)

@@ -96,6 +96,23 @@ class Music(commands.Cog):
         await ctx.send('Now playing: {}'.format(player.title))
 
 
+    @commands.command(aliases=['pause'])
+    async def _pause(self, ctx):
+        """!pause - Pauses the current playing track."""
+        #if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+        ctx.voice_client.pause()
+        await ctx.send("Paused current track.")
+
+
+    @commands.command(aliases=['resume'])
+    async def _resume(self, ctx):
+        """!resume - Resumes the current paused track."""
+        #if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+        ctx.voice_client.resume()
+        await ctx.send("Resuming current track.")
+
+
+
     @commands.command()
     async def tts(self, ctx, *arguments):
         """!tts <text> - Text to speech."""
