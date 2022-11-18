@@ -24,7 +24,7 @@ class WikiSearch(commands.Cog):
             end_url = 'https://oldschool.runescape.wiki'
             query_url = 'https://oldschool.runescape.wiki/w/Special:Search?search={0}&profile=default&fulltext=1&searchToken=996oaxfbkyqcf1jz9bfg90ms9'.format(search.replace(" ", "+"))
         try:
-            page = requests.get(query_url).text
+            page = requests.get(query_url, verify=False).text
             soup = BeautifulSoup(page, 'html.parser')
             result = soup.find(class_="mw-search-result-heading")
             end_string = str(result.select_one("a")['href'])

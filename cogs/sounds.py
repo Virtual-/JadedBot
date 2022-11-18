@@ -118,6 +118,16 @@ class Sounds(commands.Cog):
     async def rack(self, ctx):
         """!rack - Plays beautiful rack."""
         await self.play(ctx, "assets/rack.webm")
+        
+    @commands.command()
+    async def toasty(self, ctx):
+        """!toasty - Toasty."""
+        await self.play(ctx, "assets/toasty.mp3")
+
+    @commands.command()
+    async def plug(self, ctx):
+        """!plug - Plug."""
+        await self.play(ctx, "assets/plug.mp3")
 
 
 def setup(bot):
