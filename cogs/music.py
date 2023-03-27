@@ -1,6 +1,6 @@
 import asyncio
 import discord
-import youtube_dl
+import yt_dlp as youtube_dl
 import os
 from gtts import gTTS
 from discord.ext import commands
@@ -88,13 +88,12 @@ class Music(commands.Cog):
     @commands.command(aliases=['ytplay']) # Alias to keep things simple
     async def stream(self, ctx, *, url):
         """!stream <search/URL> - Directly streams the requested URL or search term. (Can be buggy)"""
-
-        async with ctx.typing():
+        try:
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
             ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-
-        await ctx.send('Now playing: {}'.format(player.title))
-
+            await ctx.send(':musical_note: Now playing: {} :100:'.format(player.title))
+        except AttributeError:
+            await ctx.send("You're not in a channel.")
 
     @commands.command(aliases=['pause'])
     async def _pause(self, ctx):
@@ -175,5 +174,5 @@ class Music(commands.Cog):
             await ctx.send("I'm not currently in a voice channel.")
 
 
-def setup(bot):
-    bot.add_cog(Music(bot))
+async def setup(bot):
+    await bot.add_cog(Music(bot))

@@ -130,5 +130,5 @@ class Sounds(commands.Cog):
         await self.play(ctx, "assets/plug.mp3")
 
 
-def setup(bot):
-    bot.add_cog(Sounds(bot))
+async def setup(bot):
+    await bot.add_cog(Sounds(bot))

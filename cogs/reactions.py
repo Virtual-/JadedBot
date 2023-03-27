@@ -35,5 +35,5 @@ class Reactions(commands.Cog):
         """!juul - Places juul vape vocoded into chat."""
         await ctx.send(file=discord.File('assets/juul.gif'))
 
-def setup(bot):
-    bot.add_cog(Reactions(bot))
+async def setup(bot):
+    await bot.add_cog(Reactions(bot))

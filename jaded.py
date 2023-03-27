@@ -1,6 +1,7 @@
 import discord
 import os
 import configparser
+import asyncio
 from discord.ext import commands
 
 JADEDVER = 2.2
@@ -12,7 +13,9 @@ if os.name != 'nt':
 
 config = configparser.ConfigParser()
 config.read('configfile')
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),description="Jaded Bot")
+intents = discord.Intents.all()
+intents.members = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 
 @bot.command()
@@ -37,15 +40,15 @@ async def unload(ctx, extension):
     """!unload <module> - Unloads a python module into the bot"""
     bot.unload_extension(f'cogs.{extension}')
 
+@bot.event
+async def on_voice_state_update(member, before, after):
+    voice_state = member.guild.voice_client
+    if voice_state is None:
+        return
+    if len(voice_state.channel.members) == 1:
+        await voice_state.disconnect()
 
 
-for filename in os.listdir('./cogs'):
-    if filename.endswith('.py'):
-        try:
-            bot.load_extension(f'cogs.{filename[:-3]}')
-        except Exception as e:
-            print("Had an issue loading {0} module. Skipping".format(filename))
-            print(e)
 
 
 if os.path.isfile('configfile'):
@@ -67,5 +70,15 @@ try:
 except KeyError:
     print("\nYou seem to be missing the discord key for the bot, please add this to configfile\n\n")
 
+async def main():
+    async with bot:
+        await bot.load_extension(f'cogs.music')
+        await bot.load_extension(f'cogs.reactions')
+        await bot.load_extension(f'cogs.reddit')
+        await bot.load_extension(f'cogs.sounds')
+        await bot.load_extension(f'cogs.wikisearch')
+        await bot.load_extension(f'cogs.wow')
+        await bot.load_extension(f'cogs.youtube')
+        await bot.start(config['JadedBot']['TOKEN'])
 
-bot.run(config['JadedBot']['TOKEN'])
+asyncio.run(main())

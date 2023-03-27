@@ -1,6 +1,8 @@
-### JadedBot 2.2
+### JadedBot 2.3
 
-This is the release of JadedBot 2.2.
+This is the release of JadedBot 2.3
+
+Updated to the latest Discordpy release (2.2.2).
 
 JadedBot Features:
 

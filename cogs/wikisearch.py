@@ -75,5 +75,5 @@ class WikiSearch(commands.Cog):
         await ctx.send('' + ck_string)
 
 
-def setup(bot):
-    bot.add_cog(WikiSearch(bot))
+async def setup(bot):
+    await bot.add_cog(WikiSearch(bot))

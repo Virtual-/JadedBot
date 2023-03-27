@@ -32,5 +32,5 @@ class YouTube(commands.Cog):
         await ctx.send(result['search_result'][index]['link'])
 
 
-def setup(bot):
-    bot.add_cog(YouTube(bot))
+async def setup(bot):
+    await bot.add_cog(YouTube(bot))
