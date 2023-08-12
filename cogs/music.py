@@ -17,8 +17,8 @@ ytdl_format_options = {
     'nocheckcertificate': True,
     'ignoreerrors': True,
     'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
+    'quiet': False,
+    'no_warnings': False,
     'default_search': 'auto',
     'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
