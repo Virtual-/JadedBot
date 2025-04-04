@@ -57,6 +57,7 @@ else:
     print("\nCan't see 'configfile' generating blank configfile...")
     f = open("configfile", "w")
     f.write("[JadedBot]\nTOKEN =\nREDDIT_ID =\nREDDIT_SECRET =\n")
+    f.close()
 
 
 print("\n")
