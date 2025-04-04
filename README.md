@@ -1,8 +1,6 @@
-### JadedBot 2.3
+### JadedBot 2.4
 
-This is the release of JadedBot 2.3
-
-Updated to the latest Discordpy release (2.2.2).
+This is the release of JadedBot 2.4
 
 JadedBot Features:
 
@@ -14,25 +12,18 @@ JadedBot Features:
 
 A TLDR of JadedBot is a small modular custom bot for discord that I originally wrote for a discord community. It's become more of a project for me now and a way for me to practice with Python and new programming concepts.
 
-#### Where is 1.0?
-
-JadedBot had a rewrite as once upon a time this bot was just one Python file with the assets folder.
-
-If you go far back enough in the commits you can see these changes but there was no 'official' release of 1.0 as I didn't think it was good enough at that point.
-
-
 ### Installation.
 
 #### Unix/Linux/BSD
 The easiest time you'll have installing this bot is in a UNIX like environment such a Linux/BSD.
 
-You may need sudo access for pip3 access aswell as ffmpeg installed on your system if you want to play music over voice channels.
+You may need sudo access for python pip access aswell as ffmpeg installed on your system if you want to play music over voice channels.
 
 ##### FFmpeg
 
-Let's start with installing ffmpeg. I'm using Fedora so for me it's as simple as:
+Let's start with installing ffmpeg. I'm using Arch Linux so for me it's as simple as:
 
-`$ sudo dnf install ffmpeg -y`
+`$ sudo pacman -S ffmeg`
 
 After this command has run type `ffmpeg` into the terminal and if you see something along the lines of:
 
@@ -42,29 +33,26 @@ ffmpeg version 4.3.2 Copyright (c) 2000-2021 the FFmpeg developers
 ```
 ffmpeg has been correctly installed.
 
+Consult your distribution on how to install ffmpeg but it's usually in the default repositories.
+
 ##### PIP
 
 There is plenty of documentation for installing pip on Linux/BSD systems but the simpliest command is:
 
 `curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py`
 
-##### JadedBot source
-If you also need git on your system install it via your package manager.
+Some package managers let you install this. Example on Arch linux: `$ sudo pacman -S python-pip`
+
+##### JadedBot source and usage
+If you also need git on your system so you should install it via your package manager.
 
 ```
 $ git clone https://github.com/Virtual-/JadedBot
 $ cd JadedBot
-$ pip3 install -r requirements.txt
 $ touch configfile
 ```
 
 Notice at the end we created a configfile. This is the file that will hold the settings we need in order for the bot to work properly so edit the file and input the following:
-
-At this point we should also update the pip packages just to be sure we are on the latest.
-
-`pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install -U`
-
-Try substitute `pip` for `pip3` if you use a system thats old enough to still use Python2 if you have issues installing.
 
 ```
 [JadedBot]
@@ -81,9 +69,19 @@ The token entry, the top `TOKEN` is your discord API key.
 
 The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
 
-Start up the program with `$ python3 jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
+At this point we should create a virtual environment with the command `$ python -m venv .` and then activate into this environment with `$ source ./bin/activate` whenever you'd like to start the bot.
 
-#### Windows 
+Your shell prompt should now being with `(JadedBot)` which indicates we're inside the virtual environment. Once you know you're in the environment then we need to install the required packages with: `$ pip install -r requirements.txt`
+
+To start up the program use `$ python jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
+
+##### Updating pip packages
+
+You may find that packages can get out of date. To update simply run `$ pip freeze | cut -d= -f1 | xargs -n1 pip install -U` while in the virtual environment.
+
+#### Windows
+
+WARNING: This windows part may be out of date and may need a rewrite
 
 ##### Visual C++
 First we are going to need to install Visual C++ 14.0 or greater found here: https://visualstudio.microsoft.com/visual-cpp-build-tools/
@@ -184,20 +182,10 @@ Sounds:
   trap3      !trap3 - Plays the first trapaholics sound effect.
   trap4      !trap4 - Plays the first trapaholics sound effect.
   rack       !rack  - Plays beautiful rack sound effect.
+  toasty     !toasty - Plays the mortal kombat "toasty" sound.
   
 WikiSearch:
-  ck2        !ck2 <search> - Searches the CK2 wiki.
-  ck3        !ck3 <search> - Searches the CK3 wiki.
   everquest  !everquest, !eq <search> - Searches the Project1999 wiki.
-  runescape  !runescape, !rs <search> - Searched the OSRS wiki.
-  !highalch, !ha <search> - Searches the OSRS wiki for an item and returns high alchemy price.
-
-WoW:
-  wow        !wow <search> - Searches wowdb and returns the result.
-  
-YouTube:
-  vaporwave  !vaporwave - Searches youtube for vaporwave.
-  youtube    !youtube <search> - Searches youtube with your search and returns the first link.
   
 No Category:
   help       Shows this message

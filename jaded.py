@@ -4,7 +4,7 @@ import configparser
 import asyncio
 from discord.ext import commands
 
-JADEDVER = 2.2
+JADEDVER = 2.4
 COMMITID = ""
 
 if os.name != 'nt':
@@ -48,9 +48,6 @@ async def on_voice_state_update(member, before, after):
     if len(voice_state.channel.members) == 1:
         await voice_state.disconnect()
 
-
-
-
 if os.path.isfile('configfile'):
     pass
 else:
@@ -79,7 +76,6 @@ async def main():
         await bot.load_extension(f'cogs.sounds')
         await bot.load_extension(f'cogs.wikisearch')
         await bot.load_extension(f'cogs.wow')
-        await bot.load_extension(f'cogs.youtube')
         await bot.start(config['JadedBot']['TOKEN'])
 
 asyncio.run(main())
