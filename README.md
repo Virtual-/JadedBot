@@ -69,9 +69,9 @@ The token entry, the top `TOKEN` is your discord API key.
 
 The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
 
-At this point we should create a virtual environment with the command `$ python -m venv .` and then activate into this environment with `$ source ./bin/activate` whenever you'd like to start the bot.
+At this point we should create a virtual environment with the command `$ python -m venv bot-env` and then activate into this environment with `$ source ./bot-env/bin/activate` whenever you'd like to start the bot.
 
-Your shell prompt should now being with `(JadedBot)` which indicates we're inside the virtual environment. Once you know you're in the environment then we need to install the required packages with: `$ pip install -r requirements.txt`
+Your shell prompt should now being with `(JadedBot)` which indicates we're inside the virtual environment. Once you know you're in the environment then we need to install the required packages but first update pip with `$ pip install --upgrade pip` and then run`$ pip install -r requirements.txt` to install the packages required.
 
 To start up the program use `$ python jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
 

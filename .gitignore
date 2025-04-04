@@ -2,3 +2,10 @@ configfile
 *.swp
 __pycache__
 .tmp
+bin/
+lib/
+lib64
+include/
+share/
+pyvenv.cfg
+bot-env/
