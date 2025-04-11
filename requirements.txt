@@ -9,3 +9,4 @@ yt_dlp
 gitdb
 GitPython
 gTTS
+pillow
