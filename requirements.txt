@@ -1,12 +1,12 @@
 beautifulsoup4
-discord.py
+discord.py[voice]
 hjson
 requests
 youtube-search-python
-praw
 PyNaCl
 yt_dlp
 gitdb
 GitPython
 gTTS
 pillow
+

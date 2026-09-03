@@ -9,3 +9,9 @@ include/
 share/
 pyvenv.cfg
 bot-env/
+assets/
+reactions.db
+reactionsbackup.db
+Pipfile
+Pipfile.lock
+.gitignore

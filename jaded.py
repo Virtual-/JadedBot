@@ -4,6 +4,17 @@ import configparser
 import asyncio
 from discord.ext import commands
 
+#import logging
+#
+#logging.basicConfig(level=logging.DEBUG)
+#
+#logger = logging.getLogger('discord')
+#logger.setLevel(logging.DEBUG)
+#handler = logging.StreamHandler()
+#handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+#logger.addHandler(handler)
+
+
 JADEDVER = 2.4
 COMMITID = ""
 
@@ -31,14 +42,14 @@ async def version(ctx):
 @commands.has_permissions(administrator=True)
 async def load(ctx, extension):
     """!load <module> - Loads a python module into the bot"""
-    bot.load_extension(f'cogs.{extension}')
+    await bot.load_extension(f'cogs.{extension}')
 
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def unload(ctx, extension):
     """!unload <module> - Unloads a python module into the bot"""
-    bot.unload_extension(f'cogs.{extension}')
+    await bot.unload_extension(f'cogs.{extension}')
 
 @bot.event
 async def on_voice_state_update(member, before, after):
@@ -53,7 +64,7 @@ if os.path.isfile('configfile'):
 else:
     print("\nCan't see 'configfile' generating blank configfile...")
     f = open("configfile", "w")
-    f.write("[JadedBot]\nTOKEN =\nREDDIT_ID =\nREDDIT_SECRET =\n")
+    f.write("[JadedBot]\nTOKEN =\n")
     f.close()
 
 
@@ -68,14 +79,24 @@ try:
 except KeyError:
     print("\nYou seem to be missing the discord key for the bot, please add this to configfile\n\n")
 
+
+# AWFUL ghetto workaround for issue in yt_dlp right now. Needs removal at some point. Monkeypatched to keep running.
+import yt_dlp.extractor.youtube.pot._provider as provider
+
+def patched_bug_reports_message(before=''):
+        return "Please report bugs at https://github.com/yt-dlp/yt-dlp/issues"
+
+provider.bug_reports_message = patched_bug_reports_message
+
+
 async def main():
     async with bot:
         await bot.load_extension(f'cogs.music')
         await bot.load_extension(f'cogs.reactions')
-        await bot.load_extension(f'cogs.reddit')
         await bot.load_extension(f'cogs.sounds')
         await bot.load_extension(f'cogs.wikisearch')
         await bot.load_extension(f'cogs.wow')
+        await bot.load_extension(f'cogs.help')
         await bot.start(config['JadedBot']['TOKEN'])
 
 asyncio.run(main())
