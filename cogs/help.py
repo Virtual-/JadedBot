@@ -8,10 +8,11 @@ CATEGORY_META = {
     "Soundboard": ("\N{SPEAKER WITH THREE SOUND WAVES}", ["Sounds"]),
     "Reactions":  ("\N{FRAME WITH PICTURE}",     ["Reactions"]),
     "Search":     ("\N{RIGHT-POINTING MAGNIFYING GLASS}", ["WikiSearch", "WoW"]),
+    "Monsters & Memories": ("\N{DRAGON FACE}",   ["Monsters"]),
     "Bot":        ("\N{GEAR}",                   ["HelpCog", None]),
 }
 
-CATEGORY_ORDER = ["Music", "Soundboard", "Reactions", "Search", "Bot"]
+CATEGORY_ORDER = ["Music", "Soundboard", "Reactions", "Search", "Monsters & Memories", "Bot"]
 
 # reverse lookup: cog qualified name -> category display name
 COG_TO_CATEGORY = {}
@@ -29,10 +30,18 @@ CATEGORY_ALIASES = {
 
 
 def _clean_doc(text):
-    """Strip a leading `!cmd - ` prefix from an existing docstring."""
+    """Strip a leading `!cmd - ` prefix from an existing docstring.
+
+    Only looks at the first line - a docstring can have further lines (e.g. a
+    bulleted usage list) that legitimately contain " - " of their own, and
+    those must survive untouched rather than being swallowed by a global split.
+    """
     if not text:
         return ""
-    return text.split(" - ", 1)[1].strip() if " - " in text else text.strip()
+    lines = text.strip().split("\n")
+    first = lines[0]
+    lines[0] = first.split(" - ", 1)[1].strip() if " - " in first else first.strip()
+    return "\n".join(lines)
 
 
 class JadedHelp(commands.HelpCommand):
@@ -107,6 +116,12 @@ class JadedHelp(commands.HelpCommand):
     async def send_cog_help(self, cog):
         await self.send_category_help(self._category_of(cog))
 
+    async def send_group_help(self, group):
+        # discord.py routes Group commands here instead of send_command_help; the base
+        # implementation is a no-op, so without this override `!help <group>` silently
+        # does nothing. send_command_help already handles Group (it lists subcommands).
+        await self.send_command_help(group)
+
     async def send_category_help(self, disp):
         prefix = self.context.clean_prefix
         cmds = [c for c in self.context.bot.commands if self._category_of(c.cog) == disp]
@@ -139,6 +154,17 @@ class JadedHelp(commands.HelpCommand):
                 value=", ".join(f"`{prefix}{a}`" for a in command.aliases),
                 inline=False,
             )
+        if isinstance(command, commands.Group):
+            subs = await self.filter_commands(command.commands, sort=True)
+            if subs:
+                lines = []
+                for c in subs:
+                    doc = _clean_doc(c.short_doc)
+                    lines.append(f"`{prefix}{c.qualified_name}` \N{EM DASH} {doc}" if doc else f"`{prefix}{c.qualified_name}`")
+                text = "\n".join(lines)
+                if len(text) > 1024:
+                    text = " ".join(f"`{prefix}{c.qualified_name}`" for c in subs)
+                embed.add_field(name="Subcommands", value=text, inline=False)
         disp = self._category_of(command.cog)
         embed.set_footer(text=f"{self._emoji_of(disp)} {disp}")
         await self.get_destination().send(embed=embed)

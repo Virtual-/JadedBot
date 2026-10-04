@@ -2,6 +2,7 @@ import discord
 import os
 import configparser
 import asyncio
+import importlib.util
 from discord.ext import commands
 
 #import logging
@@ -15,7 +16,7 @@ from discord.ext import commands
 #logger.addHandler(handler)
 
 
-JADEDVER = 2.4
+JADEDVER = 2.5
 COMMITID = ""
 
 if os.name != 'nt':
@@ -64,7 +65,7 @@ if os.path.isfile('configfile'):
 else:
     print("\nCan't see 'configfile' generating blank configfile...")
     f = open("configfile", "w")
-    f.write("[JadedBot]\nTOKEN =\n")
+    f.write("[JadedBot]\nTOKEN =\n\n[OptionalCogs]\nmonsters = false\n")
     f.close()
 
 
@@ -120,6 +121,34 @@ def patched_bug_reports_message(before=''):
 provider.bug_reports_message = patched_bug_reports_message
 
 
+OPTIONAL_COGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cogs-optional')
+
+
+async def load_optional_cogs(bot):
+    """Load cogs from cogs-optional/, each gated by its own [OptionalCogs] key
+    in configfile (off unless a user explicitly turns it on). These aren't part
+    of the core bot - separate directory, separate opt-in, so a rough or
+    experimental cog never loads unless someone asks for it."""
+    if not os.path.isdir(OPTIONAL_COGS_DIR):
+        return
+
+    for filename in sorted(os.listdir(OPTIONAL_COGS_DIR)):
+        if not filename.endswith('.py') or filename.startswith('_'):
+            continue
+        name = filename[:-3]
+
+        if not config.getboolean('OptionalCogs', name, fallback=False):
+            print(f"[optional cogs] {name} is disabled (enable it under [OptionalCogs] in configfile)")
+            continue
+
+        path = os.path.join(OPTIONAL_COGS_DIR, filename)
+        spec = importlib.util.spec_from_file_location(f'cogs_optional.{name}', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        await module.setup(bot)
+        print(f"[optional cogs] {name} loaded")
+
+
 async def main():
     async with bot:
         await bot.load_extension(f'cogs.music')
@@ -128,6 +157,7 @@ async def main():
         await bot.load_extension(f'cogs.wikisearch')
         await bot.load_extension(f'cogs.wow')
         await bot.load_extension(f'cogs.help')
+        await load_optional_cogs(bot)
         await bot.start(config['JadedBot']['TOKEN'])
 
 

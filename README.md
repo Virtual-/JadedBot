@@ -1,198 +1,274 @@
-### JadedBot 2.4
+### JadedBot 2.5
 
-This is the release of JadedBot 2.4
+JadedBot is a small, modular Discord bot. It started as a one-off for a single Discord community and has become more of a personal project for practicing Python and new programming concepts.
 
-JadedBot Features:
+#### What's new in 2.5
 
-- Modular plugins (Able to reload plugins while the bot is in use.)
-- Audio functionality (various websites including YouTube, soundcloud and now text to speech).
-- Reddit functionality.
-- Customized wiki searches.
-- Extendable.
+- **Music queue** - `!stream` now queues tracks instead of talking over whatever's already playing, with `!skip`, `!queue`, `!pause`/`!resume`. A playlist link asks `!yes`/`!no` before queuing the whole thing.
+- **Categorised `!help`** - commands are grouped by Music / Soundboard / Reactions / Search / Bot, with `!help <command>` and `!help <category>` for details.
+- **Security fix** - `!reactionadd` could be made to write a file outside its `assets/` folder via a crafted name (e.g. `../../something`), and `!r` would then replay that file back into the channel on demand. Both the write and the read now resolve the real path and refuse anything that doesn't land inside `assets/`.
+- **Single-instance guard** - if a second copy of the bot is started against the same token (e.g. a stray manual run alongside a systemd service), it now exits immediately instead of silently answering every command twice.
+- Retired the old Reddit integration (`praw`) - it needed credentials most people running this bot don't have, and wasn't maintained.
+- Fixed a typo that silently disabled the `!ram` alias for `!ramranch`.
+- **Optional cogs** - a `cogs-optional/` folder for cogs that are off by default and opted into per-cog in `configfile`, starting with `!monsters` (Monsters & Memories wiki lookups). See [Optional cogs](#optional-cogs) below.
 
-A TLDR of JadedBot is a small modular custom bot for discord that I originally wrote for a discord community. It's become more of a project for me now and a way for me to practice with Python and new programming concepts.
+#### Features
 
-### Installation.
+- **Modular plugins** - each feature area is a separate cog (`cogs/*.py`) that can be hot-reloaded with `!load`/`!unload` without restarting the bot.
+- **Music** - plays audio from YouTube and anywhere else [yt-dlp](https://github.com/yt-dlp/yt-dlp) supports, with a real queue, playlist confirmation, skip/pause/resume/volume, and text-to-speech.
+- **Soundboard** - a set of short pre-recorded clips triggered by command name.
+- **Reactions** - posts an image for a given command name; new ones can be added live with `!reactionadd`, backed by a small SQLite database (`reactions.db`) and the `assets/` folder, no restart required.
+- **Wiki/item search** - `!everquest`/`!eq` searches the Project 1999 wiki, `!wow` searches WoWDB.
+- **Extendable** - adding a feature is adding a cog; `jaded.py` just loads whatever's in `cogs/`. Cogs that aren't ready for everyone to have on by default go in `cogs-optional/` instead - see below.
 
-#### Unix/Linux/BSD
-The easiest time you'll have installing this bot is in a UNIX like environment such a Linux/BSD.
+### Installation
 
-You may need sudo access for python pip access aswell as ffmpeg installed on your system if you want to play music over voice channels.
+You'll need **Python 3.9 or newer** (developed and tested on 3.14) and **ffmpeg** if you want voice/audio features. Steps below are grouped by platform; all of them end up running the same `jaded.py` the same way.
+
+#### Linux / BSD
 
 ##### FFmpeg
 
-Let's start with installing ffmpeg. I'm using Arch Linux so for me it's as simple as:
-
-`$ sudo pacman -S ffmeg`
-
-After this command has run type `ffmpeg` into the terminal and if you see something along the lines of:
+Install it through your package manager - e.g. on Arch:
 
 ```
-ffmpeg version 4.3.2 Copyright (c) 2000-2021 the FFmpeg developers
-  built with gcc 10 (GCC)
+$ sudo pacman -S ffmpeg
 ```
-ffmpeg has been correctly installed.
 
-Consult your distribution on how to install ffmpeg but it's usually in the default repositories.
+Debian/Ubuntu: `sudo apt install ffmpeg`. Confirm it worked:
 
-##### PIP
+```
+$ ffmpeg -version
+ffmpeg version 6.1 Copyright (c) 2000-2024 the FFmpeg developers
+```
 
-There is plenty of documentation for installing pip on Linux/BSD systems but the simpliest command is:
+##### Python & pip
 
-`curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py`
+Most distributions ship Python 3 already. If `pip` isn't present, your package manager usually has it (`sudo pacman -S python-pip`, `sudo apt install python3-pip`), or use `curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py`.
 
-Some package managers let you install this. Example on Arch linux: `$ sudo pacman -S python-pip`
-
-##### JadedBot source and usage
-If you also need git on your system so you should install it via your package manager.
+##### Get the source and configure
 
 ```
 $ git clone https://github.com/Virtual-/JadedBot
 $ cd JadedBot
-$ touch configfile
 ```
 
-Notice at the end we created a configfile. This is the file that will hold the settings we need in order for the bot to work properly so edit the file and input the following:
+Running the bot once (`python jaded.py`) will fail but generate a blank `configfile` for you. Open it and set your bot's token:
 
 ```
 [JadedBot]
 TOKEN = DISCORDTOKENHERE
-REDDIT_ID = REDDITTOKENHERE
-REDDIT_SECRET = REDDITSECRETHERE
 ```
 
-You can also run the bot and although it will fail, it will generate a configfile for you.
+##### Virtual environment & dependencies
 
-If reddit functionality is not required, you can leave the REDDIT_ID and REDDIT_SECRET empty and the bot will not load reddit functionality on boot.
+```
+$ python -m venv bot-env
+$ source ./bot-env/bin/activate
+$ pip install --upgrade pip
+$ pip install -r requirements.txt
+```
 
-The token entry, the top `TOKEN` is your discord API key. 
+Your prompt should now be prefixed with `(bot-env)`. Start the bot with:
 
-The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
+```
+$ python jaded.py
+```
 
-At this point we should create a virtual environment with the command `$ python -m venv bot-env` and then activate into this environment with `$ source ./bot-env/bin/activate` whenever you'd like to start the bot.
+Run it somewhere persistent - GNU Screen, tmux, `nohup python3 jaded.py &`, or as a proper service (see below).
 
-Your shell prompt should now being with `(JadedBot)` which indicates we're inside the virtual environment. Once you know you're in the environment then we need to install the required packages but first update pip with `$ pip install --upgrade pip` and then run`$ pip install -r requirements.txt` to install the packages required.
+##### Updating dependencies
 
-To start up the program use `$ python jaded.py`. It's best to run this in the background somehow, there are various ways to do this on Linux/BSD systems with GNU Screen, Tmux or simply running `$ python3 jaded.py &`.
+```
+$ pip freeze | cut -d= -f1 | xargs -n1 pip install -U
+```
 
-##### Updating pip packages
+##### Running as a systemd service (optional)
 
-You may find that packages can get out of date. To update simply run `$ pip freeze | cut -d= -f1 | xargs -n1 pip install -U` while in the virtual environment.
+For an always-on bot on a Linux server, a unit like this (adjust the paths and user) keeps it running and restarts it if it crashes - and only ever as one instance, since `systemctl restart` stops the old process before starting the new one:
+
+```ini
+[Unit]
+Description=JadedBot Discord Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=youruser
+WorkingDirectory=/home/youruser/JadedBot
+ExecStart=/home/youruser/JadedBot/bot-env/bin/python /home/youruser/JadedBot/jaded.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Save it as `/etc/systemd/system/jadedbot.service`, then `sudo systemctl enable --now jadedbot.service`. Use `sudo systemctl restart jadedbot.service` to apply code changes - don't start a second copy with a manual `python jaded.py` alongside it; the bot will refuse to start a second instance against the same working directory, but it's cleaner to only ever manage it through systemd.
+
+#### macOS
+
+##### FFmpeg
+
+Install via [Homebrew](https://brew.sh):
+
+```
+$ brew install ffmpeg
+```
+
+##### Python
+
+macOS ships an old system Python; install a current one via Homebrew instead:
+
+```
+$ brew install python
+```
+
+##### Source, virtual environment & dependencies
+
+Same as Linux from here:
+
+```
+$ git clone https://github.com/Virtual-/JadedBot
+$ cd JadedBot
+$ python3 -m venv bot-env
+$ source ./bot-env/bin/activate
+$ pip install --upgrade pip
+$ pip install -r requirements.txt
+```
+
+Run once to generate `configfile`, set your `TOKEN`, then `python jaded.py`. To keep it running after you close the terminal, the same `nohup`/`screen`/`tmux` approaches as Linux work fine; for an always-on setup, a [launchd](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html) agent is the macOS equivalent of the systemd unit above.
 
 #### Windows
 
-WARNING: This windows part may be out of date and may need a rewrite
+> This section may need revisiting as tooling changes - please open an issue if a step is out of date.
 
-##### Visual C++
-First we are going to need to install Visual C++ 14.0 or greater found here: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+##### Visual C++ Build Tools
 
-Install this and when finished open up "Visual Studio Installer" and navigate to the "Available tab" and install "Visual Studio Build Tools 2019".
+Some Python packages need a C++ toolchain. Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/), then in "Visual Studio Installer" → "Modify" → Desktop & Mobile → "C++ build tools", make sure these are selected:
 
-After this is installed you will then need to click "Modify" on "Visual Studio Build Tools 2019"
-
-Under Desktop & Mobile select "C++ build tools" and on the right side under Installation details make sure the following are selected.
-
-- MSVC v142 -VS 2019 C++ x64/x86 build tools
+- MSVC v142 - VS 2019 C++ x64/x86 build tools
 - Windows 10 SDK
-- C++ Cmake tools for Windows
+- C++ CMake tools for Windows
 - Testing tools core features
 - C++ AddressSanitizer
 
-Once these are selected, press "modify" in the bottom right and wait for it to complete.
+Click "Modify" and wait for it to finish.
 
 ##### Python
-Go to the python website at https://www.python.org/downloads/ and download the installer.
 
-Run the installer which is pretty straight forward but make sure to select the "ADD PYTHON TO PATH" option or you will have issues with pip later on.
+Download and run the installer from [python.org](https://www.python.org/downloads/), making sure to check **"Add python.exe to PATH"**.
 
 ##### FFmpeg
-FFmpeg is required if you want the bot to play audio files and have access to voice features on discord.
 
-For JadedBot we need to download ffmpeg from here: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z
-
-Unzip this and rename the extracted folder to "ffmpeg" and place it in the root of C:
-
-The .exe file of ffmpeg should be at `"C:\ffmpeg\bin\ffmpeg.exe"`
+Download a build from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z), extract it, rename the folder to `ffmpeg` and place it at `C:\ffmpeg`, so that `C:\ffmpeg\bin\ffmpeg.exe` exists. Add `C:\ffmpeg\bin` to your PATH (or the bot won't find it when launching voice).
 
 ##### JadedBot source
-The easiest way is to download the latest source from: https://github.com/Virtual-/JadedBot/releases/
 
-Download the source code, extract it and open the JadedBot folder.
-
-Hold shift and right click in the folder and select "open powershell window here"
-
-First we will install the dependencies with the command: `pip install -r requirements.txt` 
-
-After this command is finished we will then re-update these dependencies as they could be out of date with this command: `pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}`
-
-Run the bot with `python jaded.py`, this will probably fail as we haven't set up the discord key in the `configfile` but this will generate the `configfile` in the directory.
-
-Open the `configfile` and set the TOKEN variable with your discord key.
-
-If reddit functionality is not required, you can leave the REDDIT_ID and REDDIT_SECRET empty and the bot will not load reddit functionality on boot.
-
-The token entry, the top `TOKEN` is your discord API key. 
-
-The following two are only necessary if you want reddit functionality. If you want that follow this [guide](https://praw.readthedocs.io/en/latest/getting_started/authentication.html).
-
-Run `python jaded.py` again and the bot should now be running.
-
-
-### Usage
+Download the latest release from the [releases page](https://github.com/Virtual-/JadedBot/releases), extract it, then shift+right-click inside the folder and choose "Open PowerShell window here".
 
 ```
-Jaded Bot
-
-Music:
-  join       !join <channelname> - Joins the channel.
-  leave      !leave - Leaves the channel.
-  stop       !stop - Stops and disconnects the bot from voice.
-  stream     !stream <search/URL> - Directly streams the requested URL or search terms given.
-  tts        !tts <text> - Text to speech.
-  volume     !volume <number> - Changes the volume of the audio.
-  ytplay     !ytplay <search/URL> - Downloads the file first beforehand, temporarily disabled for now.
-  
-Reactions:
-  audiophile !audiophile - Places audiophile image into chat.
-  gal        !gal - Places galosengen into chat.
-  soy        !soy - Places a soyboy image into chat.
-  smiley     !smiley - Places dancing smiley into chat.
-  juul	     !juul - Places juul vocoded into chat.
-  
-Reddit:
-  greentext  !greentext - Grabs a random post from /r/greentext
-  shitpost   !shitpost - Grabs a random post from /r/copypasta
-  
-Sounds:
-  anime      !anime - Plays the WOW sound.
-  augh       !augh - Plays the tim allen sound effect.
-  betterpoop !betterpoop - Plays when mom find poopsock better version.
-  ding       !ding - Plays the ding sound effect.
-  excellent  !excellent - Plays the excellent sound effect.
-  maybach    !maybach - Plays the Maybach music sound effect.
-  nice       !nice - Plays the nice sound effect.
-  nobodyhere !nobodyhere, !nobody - Plays nobody here.
-  poopsock   !poopsock - Plays when mom find poopsock.
-  popping    !popping - Plays the whats popping sound effect.
-  ram85      !ram85 - Plays ram ranch 85
-  ramranch   !ramranch, !ram - Plays ram ranch.
-  sorry      !sorry - Plays the sorry for what sound effect.
-  trap1      !trap1 - Plays the first trapaholics sound effect.
-  trap2      !trap2 - Plays the second trapaholics sound effect.
-  trap3      !trap3 - Plays the first trapaholics sound effect.
-  trap4      !trap4 - Plays the first trapaholics sound effect.
-  rack       !rack  - Plays beautiful rack sound effect.
-  toasty     !toasty - Plays the mortal kombat "toasty" sound.
-  
-WikiSearch:
-  everquest  !everquest, !eq <search> - Searches the Project1999 wiki.
-  
-No Category:
-  help       Shows this message
-  load       !load <module> - Loads a python module into the bot
-  unload     !unload <module> - Unloads a python module into the bot
-  version    !version - Displays information about this verison of JadedBot
-
-Type !help command for more info on a command.
-You can also type !help category for more info on a category.
+> pip install -r requirements.txt
+> pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}
 ```
+
+Run `python jaded.py` once to generate `configfile`, open it and set `TOKEN` to your Discord bot token, then run `python jaded.py` again.
+
+### Configuration
+
+`configfile` is a simple INI file created automatically on first run:
+
+```
+[JadedBot]
+TOKEN = DISCORDTOKENHERE
+```
+
+`TOKEN` is your Discord bot's token from the [Discord Developer Portal](https://discord.com/developers/applications). Nothing else is required for the core bot.
+
+A fresh `configfile` also gets an `[OptionalCogs]` section for turning on cogs from `cogs-optional/` (off by default) - see [Optional cogs](#optional-cogs).
+
+### Commands
+
+`!help` in Discord always reflects exactly what's loaded and is the source of truth; the table below is a snapshot by category.
+
+#### Music
+
+| Command | Description |
+|---|---|
+| `!join` | Joins your current voice channel. |
+| `!stream <search/URL>` (alias `!ytplay`) | Streams the track, or queues it if something is already playing. A playlist link asks for `!yes`/`!no` confirmation first. |
+| `!yes` | Confirms queuing the playlist found by your last `!stream`. |
+| `!no` | Declines the pending playlist and plays just the first track instead. |
+| `!skip` (alias `!next`) | Skips to the next track in the queue. |
+| `!queue` (alias `!q`) | Shows what's playing now and what's coming up. |
+| `!pause` | Pauses the current track. |
+| `!resume` | Resumes the current track. |
+| `!volume <number>` | Changes the playback volume (0-100). |
+| `!stop` | Stops playback and clears the queue. |
+| `!leave` | Leaves the voice channel. |
+| `!tts <text>` | Text to speech. |
+
+#### Soundboard
+
+A fixed set of short clips, each its own command: `!anime`, `!augh`, `!betterpoop`, `!ding`, `!excellent`, `!maybach`, `!nice`, `!nobodyhere` (alias `!nobody`), `!plug`, `!poopsock`, `!popping`, `!rack`, `!ram85`, `!ramranch` (alias `!ram`), `!sorry`, `!toasty`, `!trap1`-`!trap4`.
+
+#### Reactions
+
+| Command | Description |
+|---|---|
+| `!r <name>` (alias of `!reaction`) | Posts the image registered under `<name>`. |
+| `!reactionlist` | Lists every reaction currently registered. |
+| `!reactionadd <name> <url>` | Downloads the image at `<url>` and registers it as `<name>`, immediately usable via `!r <name>`. |
+
+Run `!reactionlist` in your server for the current set - it grows over time as people add to it.
+
+#### Search
+
+| Command | Description |
+|---|---|
+| `!everquest <search>` (alias `!eq`) | Searches the Project 1999 wiki. |
+| `!wow <search>` | Searches WoWDB. |
+
+#### Monsters & Memories
+
+**Optional - off by default**, lives in `cogs-optional/`; see [Optional cogs](#optional-cogs) to turn it on. Looks things up on the [Monsters & Memories wiki](https://monstersandmemories.miraheze.org/), an early-access MMO whose wiki is actively being filled in - treat gaps as "not written yet," not as bugs.
+
+- `!monsters <search term>`
+- `!monsters class 4` - Searches level 4 spells for specific class eg: `!monsters cleric 4`
+- `!monsters class spells` - Lists the levels a class gets new spells at eg: `!monsters cleric spells`
+- `!monsters maps` - Returns link to interactive map site.
+
+Every class is its own subcommand (`!monsters cleric`, `!monsters archer`, etc. - run `!help monsters` for the full list), generated from the `CLASS_LEVELS` dict in `cogs-optional/monsters.py`.
+
+#### Bot
+
+| Command | Description |
+|---|---|
+| `!help [command\|category]` | Shows the command list, or details on one command/category. |
+| `!version` | Shows the bot's version and, on Linux/macOS, the exact commit it's running. |
+| `!load <module>` *(admin only)* | Hot-loads a cog from `cogs/` without restarting the bot. |
+| `!unload <module>` *(admin only)* | Unloads a cog. |
+
+### Optional cogs
+
+`cogs-optional/` holds cogs that aren't part of the core bot - rougher, more experimental, or specific enough to one server that they shouldn't be on by default for everyone running JadedBot. Each one is **off unless you turn it on** in `configfile`:
+
+```
+[OptionalCogs]
+monsters = true
+```
+
+The key is the cog's filename (`cogs-optional/monsters.py` → `monsters`). Leaving a key out, or setting it to `false`, keeps that cog unloaded - this is also what happens automatically on an existing `configfile` from before this section existed, so updating the bot never turns one on by surprise. Changes take effect on the next restart.
+
+#### `!monsters` - maintenance notes
+
+Command usage is documented under [Monsters & Memories](#monsters--memories) above; a couple of things worth knowing if you're maintaining the cog itself:
+
+- **Per-class level lists are hardcoded**, not derived from a formula - caster classes get abilities roughly every 4 levels, melee classes get something almost every level, and it varies class to class. These were read off each class's page on the wiki at the time this cog was written and will drift as the game is patched; if a class stops matching or a level that should exist comes back empty, re-check that class's page on the wiki and update the list in `cogs-optional/monsters.py`.
+- **Search is literal**, matching the wiki's own search box - it has no fuzzy or typo correction, so e.g. `nightharbour` (no space) finds nothing even though `night harbor` finds it immediately. This is a wiki limitation, not something the command works around.
+- **Vendor info can be missing or placeholder text** (e.g. "Example Name") on newer pages - the cog shows whatever the wiki currently has rather than guessing.
+
+### License
+
+BSD 3-Clause - see [LICENSE](LICENSE).

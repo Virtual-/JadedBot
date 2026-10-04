@@ -48,7 +48,7 @@ class Sounds(commands.Cog):
         await self.play(ctx, "assets/popping.mp3")
 
 
-    @commands.command(alises=['ram'])
+    @commands.command(aliases=['ram'])
     async def ramranch(self, ctx):
         """!ramranch, !ram - Plays ram ranch."""
         await self.play(ctx, "assets/ram.webm")
