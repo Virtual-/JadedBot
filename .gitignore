@@ -2,6 +2,7 @@ configfile
 *.swp
 __pycache__
 .tmp
+.jaded.lock
 bin/
 lib/
 lib64

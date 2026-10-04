@@ -80,6 +80,37 @@ except KeyError:
     print("\nYou seem to be missing the discord key for the bot, please add this to configfile\n\n")
 
 
+LOCKFILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.jaded.lock')
+_lock_handle = None
+
+
+def acquire_single_instance_lock():
+    """Refuse to start if another copy of the bot is already running here.
+
+    Two JadedBot processes signed in with the same token each receive every
+    message from the gateway, so both run the command and both reply. That
+    reads as the bot posting everything twice, which is most obvious with
+    !r because the duplicate is a whole image. Holding an exclusive lock on
+    .jaded.lock means the second copy stops here instead.
+    """
+    global _lock_handle
+    _lock_handle = open(LOCKFILE, 'w')
+    try:
+        if os.name == 'nt':
+            import msvcrt
+            msvcrt.locking(_lock_handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(_lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print("\nJadedBot is already running from this directory, so this copy is exiting.")
+        print("Two copies on the same token answer every command twice.")
+        print("Find the running one with: pgrep -af jaded.py\n")
+        raise SystemExit(1)
+    _lock_handle.write(str(os.getpid()))
+    _lock_handle.flush()
+
+
 # AWFUL ghetto workaround for issue in yt_dlp right now. Needs removal at some point. Monkeypatched to keep running.
 import yt_dlp.extractor.youtube.pot._provider as provider
 
@@ -99,4 +130,6 @@ async def main():
         await bot.load_extension(f'cogs.help')
         await bot.start(config['JadedBot']['TOKEN'])
 
+
+acquire_single_instance_lock()
 asyncio.run(main())

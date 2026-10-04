@@ -4,6 +4,7 @@ import yt_dlp as youtube_dl
 import os
 from gtts import gTTS
 from discord.ext import commands
+from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
 # Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -31,6 +32,17 @@ ffmpeg_options = {
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
+def strip_playlist_param(url):
+    """Strip playlist query params from a single-video YouTube link."""
+    parsed = urlparse(url)
+    if 'youtu' not in parsed.netloc.lower() or parsed.path == '/playlist':
+        return url
+
+    query = [(k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+             if k not in ('list', 'index', 'start_radio')]
+    return urlunparse(parsed._replace(query=urlencode(query)))
+
+
 class YTDLSource(discord.PCMVolumeTransformer):
     """This class is a setup to stream audio into discord."""
     def __init__(self, source, *, data, volume=0.5):
@@ -56,9 +68,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def probe(cls, query):
-        """Resolve metadata for a search term / URL without downloading.
-
-        Returns a list of track dicts (more than one when a playlist is given).
+        """Resolve metadata for a search term / URL without downloading. Returns a list of track dicts (more than one when a playlist is given).
         """
         loop = asyncio.get_running_loop()
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(query, download=False))
@@ -82,8 +92,9 @@ class Music(commands.Cog):
     """This class is responsible for joining, leaving and various audio channel functionality."""
     def __init__(self, bot):
         self.bot = bot
-        self.queues = {}        # guild_id -> list of track dicts waiting to play
-        self.now_playing = {}   # guild_id -> the track dict currently playing
+        self.queues = {}             # guild_id -> list of track dicts waiting to play
+        self.now_playing = {}        # guild_id -> the track dict currently playing
+        self.pending_playlists = {}  # (guild_id, user_id) -> list of track dicts awaiting !yes
 
     def get_queue(self, guild_id):
         return self.queues.setdefault(guild_id, [])
@@ -142,6 +153,7 @@ class Music(commands.Cog):
     async def stream(self, ctx, *, url):
         """!stream <search/URL> - Streams the track, or queues it if something is already playing."""
         try:
+            url = strip_playlist_param(url)
             async with ctx.typing():
                 tracks = await YTDLSource.probe(url)
 
@@ -156,23 +168,78 @@ class Music(commands.Cog):
             for track in tracks:
                 track['requester'] = ctx.author.display_name
 
+            if len(tracks) > 1:
+                self.pending_playlists[(ctx.guild.id, ctx.author.id)] = tracks
+                await ctx.send(
+                    ":cd: That's a playlist with **{}** tracks. Type `!yes` to queue all of "
+                    "them, or `!no` to just play **{}**.".format(len(tracks), tracks[0]['title']))
+                return
+
+            self._queue_tracks(ctx.guild.id, tracks)
+
             queue = self.get_queue(ctx.guild.id)
             voice = ctx.voice_client
             already_active = voice.is_playing() or voice.is_paused()
 
-            queue.extend(tracks)
-
             if already_active:
-                if len(tracks) == 1:
-                    await ctx.send(':page_with_curl: Queued **{}** (position {}).'.format(
-                        tracks[0]['title'], len(queue)))
-                else:
-                    await ctx.send(':page_with_curl: Queued **{}** tracks.'.format(len(tracks)))
+                await ctx.send(':page_with_curl: Queued **{}** (position {}).'.format(
+                    tracks[0]['title'], len(queue)))
             else:
                 await self.play_next(ctx.guild, ctx.channel)
         except Exception as e:
             await ctx.send(f"An error occurred: {e}")
             print(f"[stream error] {e}")
+
+    def _queue_tracks(self, guild_id, tracks):
+        """Append tracks to a guild's queue; they play one after another via play_next."""
+        self.get_queue(guild_id).extend(tracks)
+
+    @commands.command(name='yes')
+    async def confirm_playlist(self, ctx):
+        """!yes - Confirms queuing the playlist found by your last !stream."""
+        tracks = self.pending_playlists.pop((ctx.guild.id, ctx.author.id), None)
+
+        if not tracks:
+            await ctx.send("There's no playlist waiting on your confirmation.")
+            return
+
+        if ctx.voice_client is None:
+            await ctx.send("Not connected to a voice channel.")
+            return
+
+        voice = ctx.voice_client
+        already_active = voice.is_playing() or voice.is_paused()
+
+        self._queue_tracks(ctx.guild.id, tracks)
+        await ctx.send(':white_check_mark: Queued **{}** tracks from the playlist.'.format(len(tracks)))
+
+        if not already_active:
+            await self.play_next(ctx.guild, ctx.channel)
+
+    @commands.command(name='no')
+    async def decline_playlist(self, ctx):
+        """!no - Declines the pending playlist and plays just the first track instead."""
+        tracks = self.pending_playlists.pop((ctx.guild.id, ctx.author.id), None)
+
+        if not tracks:
+            await ctx.send("There's no playlist waiting on your confirmation.")
+            return
+
+        if ctx.voice_client is None:
+            await ctx.send("Not connected to a voice channel.")
+            return
+
+        track = tracks[0]
+        voice = ctx.voice_client
+        already_active = voice.is_playing() or voice.is_paused()
+
+        self._queue_tracks(ctx.guild.id, [track])
+        queue = self.get_queue(ctx.guild.id)
+
+        if already_active:
+            await ctx.send(':page_with_curl: Queued **{}** (position {}).'.format(track['title'], len(queue)))
+        else:
+            await self.play_next(ctx.guild, ctx.channel)
 
     @commands.command(aliases=['next'])
     async def skip(self, ctx):
