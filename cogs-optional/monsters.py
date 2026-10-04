@@ -53,13 +53,70 @@ def _normalize(name):
 
 CLASS_LOOKUP = {_normalize(name): name for name in CLASS_LEVELS}
 
-STATIC_LINKS = {
-    'maps': 'https://www.mnmatlas.com/?level=surface&x=1335.38&y=1256&z=2.88',
-}
+# Page titles under Category:Tradeskills on the wiki (each is "Skill <Name>"; commands
+# drop the "Skill " prefix, e.g. !monsters smelting -> page "Skill Smelting"). Just a
+# name list, not per-skill data like CLASS_LEVELS - tab names/recipe tables are read
+# live off each page rather than hardcoded. Re-check Category:Tradeskills if a skill
+# stops resolving.
+TRADESKILLS = [
+    'Alchemy', 'Animal Taming', 'Archaeology', 'Bind Wound', 'Blacksmithing', 'Brewing',
+    'Carpentry', 'Cooking', 'Disenchanting', 'Enchanting', 'Farming', 'Fermenting',
+    'Fishing', 'Fletching', 'Herbalism', 'Jewelcrafting', 'Leatherworking',
+    'Lumberjacking', 'Masonry', 'Mining', 'Navigation', 'Poison Making', 'Pottery',
+    'Riding', 'Skinning', 'Smelting', 'Spellcrafting', 'Spinning', 'Spycraft',
+    'Stone Cutting', 'Survival', 'Tailoring', 'Tanning', 'Tinkering', 'Wagoneering',
+    'Wilderness', 'Woodworking',
+]
+TRADESKILL_LOOKUP = {_normalize(name): f'Skill {name}' for name in TRADESKILLS}
+
+# (title, id) for every map on mnmatlas.com - id=None is the entry/world map, which
+# lives at the site root rather than its own /<id>/ path. Pulled from the site's own
+# data/maps.json registry; re-fetch that if a map stops resolving or a new one's missing.
+MAPS = [
+    ('World map', None),
+    ('Night Harbor', 'night-harbor'),
+    ('Underdocks', 'underdocks'),
+    ("Ail'Vorith", 'ail-vorith'),
+    ('Faelindral', 'faelindral'),
+    ('Evershade Weald', 'evershade-weald'),
+    ('Sungreet Strand', 'sungreet-strand'),
+    ('Shaded Dunes', 'shaded-dunes'),
+    ('Fallen Pass', 'fallen-pass'),
+    ('Tomb of the Last Wyrmsbane', 'wyrmsbane-tomb'),
+    ('Glass Flats', 'glass-flats'),
+    ('Ancient Crypt', 'ancient-crypt'),
+    ('Scarwood', 'scarwood'),
+]
+MAPS_BASE = 'https://www.mnmatlas.com/'
+
+
+def map_url(map_id):
+    return MAPS_BASE if map_id is None else f'{MAPS_BASE}{map_id}/'
+
+
+def closest_map(query):
+    """Best-match a free-text query against MAPS titles: exact normalized match
+    first, then a title that starts with it, then any substring match - in each
+    tier preferring the shortest (most specific) title. None if nothing matches."""
+    needle = _normalize(query)
+    tiers = (
+        [(t, i) for t, i in MAPS if _normalize(t) == needle],
+        [(t, i) for t, i in MAPS if _normalize(t).startswith(needle)],
+        [(t, i) for t, i in MAPS if needle in _normalize(t)],
+    )
+    for tier in tiers:
+        if tier:
+            return min(tier, key=lambda ti: len(ti[0]))
+    return None
 
 SPELL_ROW_RE = re.compile(r'\{\{SpellRow\s*(.*?)\}\}', re.DOTALL)
 FIELD_RE = re.compile(r'\|\s*(\w+)\s*=\s*(.*?)(?=\n\s*\||\Z)', re.DOTALL)
 WIKILINK_RE = re.compile(r'\[\[(?:[^|\]]*\|)?([^\]]+)\]\]')
+TABBER_RE = re.compile(r'<tabber>(.*?)</tabber>', re.DOTALL)
+TAB_SPLIT_RE = re.compile(r'\n\|-\|\s*(.*?)\s*=\n')
+TABLE_RE = re.compile(r'\{\|.*?\n\|\}', re.DOTALL)
+SUBHEADING_RE = re.compile(r'===\s*(.*?)\s*===')
+CELL_ATTR_RE = re.compile(r'^(?:\s*[\w-]+\s*=\s*"[^"]*"\s*)+\|\s*')
 
 
 def strip_wiki_markup(text):
@@ -76,6 +133,140 @@ def page_url(title, anchor=None):
     if anchor:
         url += '#' + anchor
     return url
+
+
+def strip_cell(cell):
+    """Drop a cell's leading `style="..." |` attribute block, then clean wiki markup."""
+    return strip_wiki_markup(CELL_ATTR_RE.sub('', cell.strip()))
+
+
+def extract_tabs(wikitext):
+    """Split a page using <tabber> into {tab name: tab wikitext}.
+
+    Falls back to a single "Overview" tab covering the whole page for any
+    tradeskill page that doesn't use <tabber> (none currently do, but new
+    pages might not follow the convention yet).
+    """
+    match = TABBER_RE.search(wikitext)
+    if not match:
+        return {'Overview': wikitext}
+    pieces = TAB_SPLIT_RE.split(match.group(1))
+    tabs = {}
+    for i in range(1, len(pieces), 2):
+        name = pieces[i].strip()
+        content = pieces[i + 1] if i + 1 < len(pieces) else ''
+        tabs[name] = content
+    return tabs or {'Overview': match.group(1)}
+
+
+def extract_tables_in_tab(tab_text):
+    """Returns [(subheading or None, table wikitext), ...] for every {| ... |} in a tab."""
+    headings = list(SUBHEADING_RE.finditer(tab_text))
+    results = []
+    for table_match in TABLE_RE.finditer(tab_text):
+        heading = None
+        for heading_match in headings:
+            if heading_match.end() < table_match.start():
+                heading = heading_match.group(1)
+            else:
+                break
+        results.append((heading, table_match.group(0)))
+    return results
+
+
+def parse_wikitable(table_text):
+    """Parse a {| ... |} wikitable into (headers, rows), tolerating both ways MediaWiki
+    allows cells to be written (joined with !!/|| on one line, or one per line) and an
+    optional |+ Caption line. The header row isn't always the very first thing in the
+    table - treat every |- separated block uniformly instead of only checking the top,
+    so a table that opens with a caption still gets its real header recognised."""
+    body = table_text.strip()
+    body = re.sub(r'^\{\|[^\n]*\n', '', body)
+    body = re.sub(r'\n\|\}\s*$', '', body)
+    body = re.sub(r'^\s*\|\+[^\n]*\n', '', body)
+    # Some tables open straight into a |- row marker (no header, or a header after an
+    # explicit |-) rather than going directly into a header/row - give it a leading
+    # newline so that |- splits the same way wherever it appears, including at position 0.
+    body = '\n' + body
+
+    headers = []
+    rows = []
+    for block in re.split(r'\n\|-', body):
+        block = block.strip()
+        if block.startswith('!'):
+            if not headers:
+                headers = [strip_cell(c) for c in re.split(r'!!|\n!', block[1:])]
+        elif block.startswith('|'):
+            cells = [strip_cell(c) for c in re.split(r'\|\||\n\|', block[1:])]
+            if any(cells):
+                rows.append(cells)
+    return headers, rows
+
+
+def render_table(headers, rows):
+    """Render (headers, rows) as an aligned plain-text table for a ``` ``` code block."""
+    ncols = len(headers) if headers else (max((len(r) for r in rows), default=0))
+    norm_rows = [(row + [''] * ncols)[:ncols] for row in rows]
+    widths = [len(h) for h in headers] if headers else [0] * ncols
+    for row in norm_rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(cell))
+
+    def fmt(cells):
+        return '  '.join(c.ljust(widths[i]) for i, c in enumerate(cells)).rstrip()
+
+    lines = []
+    if headers:
+        lines.append(fmt(headers))
+        lines.append('  '.join('-' * w for w in widths))
+    lines.extend(fmt(row) for row in norm_rows)
+    return '\n'.join(lines)
+
+
+def parse_tradeskill_tab(tab_text):
+    """A tab as [(subheading or None, headers, rows), ...] - one entry per {| ... |}."""
+    parsed = []
+    for heading, table_text in extract_tables_in_tab(tab_text):
+        headers, rows = parse_wikitable(table_text)
+        if rows:
+            parsed.append((heading, headers, rows))
+    return parsed
+
+
+def chunk_table_rows(heading, headers, rows, budget=1800):
+    """Render one table's rows as one or more ``` ```-ready text blocks, each under
+    `budget` characters. A table too big for one block is split by rows, repeating
+    its header/subheading on each continuation so every block reads correctly alone."""
+    prefix = f'== {heading} ==\n' if heading else ''
+    blocks = []
+    current = []
+    for row in rows:
+        current.append(row)
+        if len(prefix) + len(render_table(headers, current)) > budget:
+            current.pop()
+            if current:
+                blocks.append(prefix + render_table(headers, current))
+            current = [row]
+    if current:
+        blocks.append(prefix + render_table(headers, current))
+    return blocks
+
+
+def find_category_options(parsed_tables, limit=8):
+    """If any table in a tab has a column literally called "Category", return the
+    distinct values seen in it (first-seen order) - these make good suggestions for
+    narrowing down a tab that's too big to post in full."""
+    seen = []
+    for _, headers, rows in parsed_tables:
+        try:
+            col = next(i for i, h in enumerate(headers) if h.strip().lower() == 'category')
+        except StopIteration:
+            continue
+        for row in rows:
+            if col < len(row) and row[col] and row[col] not in seen:
+                seen.append(row[col])
+    return seen[:limit]
+    return blocks
 
 
 def extract_level_section(full_wikitext, level):
@@ -117,6 +308,38 @@ def parse_where_to_obtain(spell_wikitext):
     cells = [strip_wiki_markup(c) for c in first_row.split('||')]
     cells = [c for c in cells if c and c != '-']
     return ' — '.join(cells) if cells else None
+
+
+class ChoiceButton(discord.ui.Button):
+    def __init__(self, option):
+        super().__init__(label=option[:80], style=discord.ButtonStyle.primary)
+        self.option = option
+
+    async def callback(self, interaction):
+        self.view.chosen = self.option
+        self.view.stop()
+        await interaction.response.defer()
+
+
+class ChoicePromptView(discord.ui.View):
+    """Buttons for picking one of several options (tradeskill categories, atlas
+    maps, ...). Only the person who ran the command can use them - everyone else
+    gets a quiet nudge. Pairs with a `!monsters ...` message waiting on a typed
+    number for the same choice; whichever the user does first wins (see
+    Monsters._prompt_for_choice)."""
+
+    def __init__(self, author, options, timeout=60):
+        super().__init__(timeout=timeout)
+        self.author = author
+        self.chosen = None
+        for option in options:
+            self.add_item(ChoiceButton(option))
+
+    async def interaction_check(self, interaction):
+        if interaction.user != self.author:
+            await interaction.response.send_message("This isn't your prompt to answer.", ephemeral=True)
+            return False
+        return True
 
 
 class Monsters(commands.Cog):
@@ -166,16 +389,17 @@ class Monsters(commands.Cog):
     @commands.group(invoke_without_command=True)
     async def monsters(self, ctx, *args):
         """Looks things up on the Monsters & Memories wiki.
-        - !monsters <search term>
-        - !monsters class 4 - Searches level 4 spells for specific class eg: !monsters cleric 4
-        - !monsters class spells - Lists the levels a class gets new spells at eg: !monsters cleric spells
-        - !monsters maps - Returns link to interactive map site."""
+        - `!monsters <search term>`
+        - `!monsters class 4` - Searches level 4 spells for specific class eg: `!monsters cleric 4`
+        - `!monsters class spells` - Lists the levels a class gets new spells at eg: `!monsters cleric spells`
+        - `!monsters tradeskill` - Lists the recipe tabs for a tradeskill eg: `!monsters smelting`
+        - `!monsters tradeskill tab` - Prints that tab's recipes eg: `!monsters smelting refining`
+        - `!monsters tradeskill tab filter` - Narrows a big tab down eg: `!monsters blacksmithing copper weapons`
+        (if a tab's too big to post, you get its categories as buttons, or reply with the number, instead)
+        - `!monsters maps` - Lets you pick an atlas map (buttons or a typed number)
+        - `!monsters maps <search>` - Jumps straight to the closest-matching map eg: `!monsters maps night`"""
         if not args:
             await ctx.send("See `!help monsters` for usage examples.")
-            return
-
-        if len(args) == 1 and args[0].lower() in STATIC_LINKS:
-            await ctx.send(STATIC_LINKS[args[0].lower()])
             return
 
         try:
@@ -183,6 +407,27 @@ class Monsters(commands.Cog):
         except Exception as e:
             await ctx.send(f"Couldn't reach the wiki ({e}).")
             print(f"[monsters error] {e}")
+
+    @monsters.command(name='maps')
+    async def maps_command(self, ctx, *args):
+        """!monsters maps [search] - Lists the atlas maps on mnmatlas.com to pick
+        from (buttons, or reply with a number), or jumps straight to the
+        closest-matching map if you give a search term - no prompt in that case."""
+        query = ' '.join(args).strip()
+
+        if not query:
+            titles = [title for title, _ in MAPS]
+            choice = await self._prompt_for_choice(ctx, ":map: Pick an atlas map:", titles)
+            if choice is not None:
+                await ctx.send(f"**{choice}** — {map_url(dict(MAPS)[choice])}")
+            return
+
+        match = closest_map(query)
+        if match is None:
+            await ctx.send(f"No map matches `{query}`. Run `!monsters maps` to see the list.")
+            return
+        title, map_id = match
+        await ctx.send(f"**{title}** — {map_url(map_id)}")
 
     async def _class_shortcut(self, ctx, class_name, args):
         """Shared handler behind each class's subcommand, e.g. !monsters cleric 20 / spells / (bare)."""
@@ -199,6 +444,145 @@ class Monsters(commands.Cog):
         except Exception as e:
             await ctx.send(f"Couldn't reach the wiki ({e}).")
             print(f"[monsters error] {e}")
+
+    async def _tradeskill_shortcut(self, ctx, skill_title, args):
+        """Shared handler behind each tradeskill's subcommand, e.g. !monsters smelting
+        [tab] [filter]. `filter` is free text matched against any cell in a row - the
+        natural case is a value from that tab's "Category" column (see
+        find_category_options), but it'll match on an ingredient or item name too."""
+        try:
+            full_text = await self._fetch_full_wikitext(skill_title)
+            if full_text is None:
+                await ctx.send(f"Couldn't load that page. Here's the link: {page_url(skill_title)}")
+                return
+
+            tabs = extract_tabs(full_text)
+            display_name = skill_title.removeprefix('Skill ')
+
+            if not args:
+                await self._send_tradeskill_tabs(ctx, skill_title, display_name, tabs)
+                return
+
+            tab_name, filter_term, ambiguous = self._resolve_tradeskill_tab(args, tabs)
+            if tab_name:
+                await self._send_tradeskill_table(
+                    ctx, skill_title, display_name, tab_name, tabs[tab_name], filter_term)
+            elif ambiguous:
+                await ctx.send(
+                    f"`{' '.join(args)}` matches more than one tab for {display_name}: "
+                    + ', '.join(f'`{m}`' for m in ambiguous) + ". Be more specific.")
+            else:
+                await ctx.send(
+                    f"No tab called `{' '.join(args)}` for {display_name}. "
+                    f"Run `!monsters {_normalize(display_name)}` for the tab list.")
+        except Exception as e:
+            await ctx.send(f"Couldn't reach the wiki ({e}).")
+            print(f"[monsters error] {e}")
+
+    def _resolve_tradeskill_tab(self, args, tabs):
+        """Match args against tab names, trying the whole thing first and - if that
+        finds nothing - treating the last word as a filter and re-matching on the
+        rest, e.g. `copper weapons` -> tab "Copper Tier (5-75)", filter "weapons".
+        Returns (tab_name, filter_term, ambiguous_matches); exactly one of
+        tab_name/ambiguous_matches is set on failure, filter_term is None unless used."""
+        full_query = _normalize(' '.join(args))
+        matches = [name for name in tabs if full_query in _normalize(name)]
+        if len(matches) == 1:
+            return matches[0], None, None
+        if len(matches) == 0 and len(args) > 1:
+            short_query = _normalize(' '.join(args[:-1]))
+            retry = [name for name in tabs if short_query in _normalize(name)]
+            if len(retry) == 1:
+                return retry[0], args[-1], None
+        return None, None, (matches if len(matches) > 1 else None)
+
+    async def _send_tradeskill_tabs(self, ctx, skill_title, display_name, tabs):
+        names = ', '.join(tabs.keys())
+        cmd = _normalize(display_name)
+        example = next(iter(tabs)).split()[0].lower()
+        await ctx.send(
+            f":hammer: **{display_name}** tabs: {names}\n"
+            f"Use `!monsters {cmd} <tab>` to see one, e.g. `!monsters {cmd} {example}`.")
+
+    async def _send_tradeskill_table(self, ctx, skill_title, display_name, tab_name, tab_text, filter_term=None):
+        tables = parse_tradeskill_tab(tab_text)
+
+        if filter_term:
+            needle = filter_term.lower()
+            tables = [(heading, headers, [r for r in rows if any(needle in c.lower() for c in r)])
+                      for heading, headers, rows in tables]
+            tables = [t for t in tables if t[2]]
+
+        if not tables:
+            if filter_term:
+                await ctx.send(
+                    f"Nothing in {display_name} — {tab_name} matches `{filter_term}`. "
+                    f"Page: {page_url(skill_title)}")
+            else:
+                await ctx.send(
+                    f"Nothing listed under {display_name} - {tab_name} yet (early access - the wiki's "
+                    f"still filling in). Page: {page_url(skill_title)}")
+            return
+
+        blocks = [block for heading, headers, rows in tables for block in chunk_table_rows(heading, headers, rows)]
+
+        if len(blocks) > 2 and not filter_term:
+            categories = find_category_options(tables)
+            header = f":hammer: **{display_name} — {tab_name}** has too many recipes to list at once."
+            if not categories:
+                await ctx.send(f"{header} See the full page: {page_url(skill_title)}")
+                return
+
+            category = await self._prompt_for_choice(ctx, header, categories)
+            if category is not None:
+                await self._send_tradeskill_table(
+                    ctx, skill_title, display_name, tab_name, tab_text, category.lower())
+            return
+
+        max_messages = 6
+        title = f":hammer: **{display_name} — {tab_name}**"
+        if filter_term:
+            title += f" ({filter_term})"
+        await ctx.send(title)
+        for block in blocks[:max_messages]:
+            await ctx.send(f"```\n{block}\n```")
+        if len(blocks) > max_messages:
+            await ctx.send(
+                f"+{len(blocks) - max_messages} more block(s) - see the full page: {page_url(skill_title)}")
+
+    async def _prompt_for_choice(self, ctx, header, options, timeout=60):
+        """Offer `options` as clickable buttons and, in parallel, accept a typed
+        number for the same choice - whichever the user does first wins. Returns
+        the chosen string, or None if the prompt timed out unanswered."""
+        numbered = '\n'.join(f'{i}. {o}' for i, o in enumerate(options, 1))
+        view = ChoicePromptView(ctx.author, options, timeout=timeout)
+        message = await ctx.send(
+            f"{header}\nPick one below, or reply with its number:\n{numbered}", view=view)
+
+        def is_valid_number(msg):
+            return (msg.author == ctx.author and msg.channel == ctx.channel
+                    and msg.content.strip().isdigit() and 1 <= int(msg.content.strip()) <= len(options))
+
+        view_wait = asyncio.ensure_future(view.wait())
+        text_wait = asyncio.ensure_future(self.bot.wait_for('message', check=is_valid_number, timeout=timeout))
+        done, pending = await asyncio.wait([view_wait, text_wait], return_when=asyncio.FIRST_COMPLETED)
+        for task in pending:
+            task.cancel()
+
+        chosen = view.chosen
+        if chosen is None and text_wait in done and not text_wait.cancelled() and text_wait.exception() is None:
+            chosen = options[int(text_wait.result().content.strip()) - 1]
+
+        if not view.is_finished():
+            view.stop()
+        for child in view.children:
+            child.disabled = True
+        try:
+            await message.edit(view=view)
+        except discord.HTTPException:
+            pass
+
+        return chosen
 
     async def _send_search_result(self, ctx, query):
         title = await self._search_top_result(query)
@@ -298,6 +682,25 @@ class Monsters(commands.Cog):
                   f"just links the page."),
         )(_make_subcommand())
     del _class_name, _cmd_name, _make_subcommand
+
+    # Same generation trick, one subcommand per tradeskill (!monsters smelting [tab]).
+    for _skill_name in TRADESKILLS:
+        _cmd_name = _normalize(_skill_name)
+        _skill_title = f'Skill {_skill_name}'
+
+        def _make_subcommand(_skill_title=_skill_title, _cmd_name=_cmd_name):
+            async def _subcommand(self, ctx, *args):
+                await self._tradeskill_shortcut(ctx, _skill_title, args)
+            _subcommand.__name__ = _cmd_name
+            _subcommand.__qualname__ = f'Monsters.{_cmd_name}'
+            return _subcommand
+
+        locals()[_cmd_name] = monsters.command(
+            name=_cmd_name,
+            help=(f"!monsters {_cmd_name} [tab] - Lists {_skill_name}'s recipe tabs, or prints one "
+                  f"tab's recipes as a table. No argument lists the tabs."),
+        )(_make_subcommand())
+    del _skill_name, _skill_title, _cmd_name, _make_subcommand
 
 
 async def setup(bot):

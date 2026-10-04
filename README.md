@@ -232,14 +232,18 @@ Run `!reactionlist` in your server for the current set - it grows over time as p
 
 #### Monsters & Memories
 
-**Optional - off by default**, lives in `cogs-optional/`; see [Optional cogs](#optional-cogs) to turn it on. Looks things up on the [Monsters & Memories wiki](https://monstersandmemories.miraheze.org/), an early-access MMO whose wiki is actively being filled in - treat gaps as "not written yet," not as bugs.
+**Optional - off by default** as contains AI generated content, lives in `cogs-optional/`; see [Optional cogs](#optional-cogs) to turn it on. Looks things up on the [Monsters & Memories wiki](https://monstersandmemories.miraheze.org/), an early-access MMO whose wiki is actively being filled in - treat gaps as "not written yet," not as bugs.
 
 - `!monsters <search term>`
 - `!monsters class 4` - Searches level 4 spells for specific class eg: `!monsters cleric 4`
 - `!monsters class spells` - Lists the levels a class gets new spells at eg: `!monsters cleric spells`
-- `!monsters maps` - Returns link to interactive map site.
+- `!monsters tradeskill` - Lists the recipe tabs for a tradeskill eg: `!monsters smelting`
+- `!monsters tradeskill tab` - Prints that tab's recipes as a table eg: `!monsters smelting refining`
+- `!monsters tradeskill tab filter` - Narrows a big tab down to rows matching a word eg: `!monsters blacksmithing copper weapons` - if a tab is too large to post, the bot offers its categories as buttons (or reply with the number) instead of dumping it all
+- `!monsters maps` - Lets you pick an atlas map from [mnmatlas.com](https://www.mnmatlas.com/) (buttons, or reply with its number)
+- `!monsters maps <search>` - Jumps straight to the closest-matching map, no prompt eg: `!monsters maps night` → Night Harbor
 
-Every class is its own subcommand (`!monsters cleric`, `!monsters archer`, etc. - run `!help monsters` for the full list), generated from the `CLASS_LEVELS` dict in `cogs-optional/monsters.py`.
+Every class and tradeskill is its own subcommand (`!monsters cleric`, `!monsters smelting`, etc. - run `!help monsters` for the full list), generated from the `CLASS_LEVELS`/`TRADESKILLS` data in `cogs-optional/monsters.py`.
 
 #### Bot
 
@@ -253,6 +257,8 @@ Every class is its own subcommand (`!monsters cleric`, `!monsters archer`, etc. 
 ### Optional cogs
 
 `cogs-optional/` holds cogs that aren't part of the core bot - rougher, more experimental, or specific enough to one server that they shouldn't be on by default for everyone running JadedBot. Each one is **off unless you turn it on** in `configfile`:
+
+See AI Usage below for more details on why it's optional.
 
 ```
 [OptionalCogs]
@@ -268,6 +274,14 @@ Command usage is documented under [Monsters & Memories](#monsters--memories) abo
 - **Per-class level lists are hardcoded**, not derived from a formula - caster classes get abilities roughly every 4 levels, melee classes get something almost every level, and it varies class to class. These were read off each class's page on the wiki at the time this cog was written and will drift as the game is patched; if a class stops matching or a level that should exist comes back empty, re-check that class's page on the wiki and update the list in `cogs-optional/monsters.py`.
 - **Search is literal**, matching the wiki's own search box - it has no fuzzy or typo correction, so e.g. `nightharbour` (no space) finds nothing even though `night harbor` finds it immediately. This is a wiki limitation, not something the command works around.
 - **Vendor info can be missing or placeholder text** (e.g. "Example Name") on newer pages - the cog shows whatever the wiki currently has rather than guessing.
+- **The atlas map list is hardcoded too**, read off [mnmatlas.com](https://www.mnmatlas.com/)'s own `data/maps.json` registry at the time this was written (13 maps). If a new map gets added to the atlas and `!monsters maps` doesn't offer it, refetch that URL and update the `MAPS` list in `cogs-optional/monsters.py`.
+
+#### AI Usage
+Some AI has been used in this project. The playlist function in music.py, README updates on this page and the optional cog "monsters.py"
+
+I moved this cog to optional for this reason and is by default OFF so will not load on boot unless specified.
+
+Most of this project was done prior to mainstream AI adoption but does utilize it from time to time
 
 ### License
 

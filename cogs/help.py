@@ -163,8 +163,22 @@ class JadedHelp(commands.HelpCommand):
                     lines.append(f"`{prefix}{c.qualified_name}` \N{EM DASH} {doc}" if doc else f"`{prefix}{c.qualified_name}`")
                 text = "\n".join(lines)
                 if len(text) > 1024:
-                    text = " ".join(f"`{prefix}{c.qualified_name}`" for c in subs)
-                embed.add_field(name="Subcommands", value=text, inline=False)
+                    # still too long even as a plain list (e.g. !monsters has 50+ subcommands) -
+                    # an embed field caps at 1024 chars, so split across as many fields as needed
+                    # rather than silently exceeding the limit.
+                    names = [f"`{prefix}{c.qualified_name}`" for c in subs]
+                    chunks = [""]
+                    for name in names:
+                        candidate = f"{chunks[-1]} {name}".strip()
+                        if len(candidate) > 1024:
+                            chunks.append(name)
+                        else:
+                            chunks[-1] = candidate
+                    for i, chunk in enumerate(chunks):
+                        label = "Subcommands" if i == 0 else "Subcommands (cont.)"
+                        embed.add_field(name=label, value=chunk, inline=False)
+                else:
+                    embed.add_field(name="Subcommands", value=text, inline=False)
         disp = self._category_of(command.cog)
         embed.set_footer(text=f"{self._emoji_of(disp)} {disp}")
         await self.get_destination().send(embed=embed)
